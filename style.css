@@ -1,112 +1,180 @@
+/* Global Reset ve Temel Stiller */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-  width: 250px;
-  background-color: #141414;
-  padding: 10px 20px 20px 20px;
-}
-.buton {
-  background: darkred;
-  color: white;
-  padding: 13px;
-  border: azure 2px;
-  font-family: sans-serif;
-  margin: 3px;
-}
-.mainArea {
-  align-items: center;
-  justify-content: center;
-  display: grid;
-}
-.toggleArea {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.baslik {
-  font-size: 16px;
-  text-align: center;
-  display: block;
-  margin-top: 7px;
-  margin-bottom: 7px;
-  font-weight: 700;
-  color: white;
-}
-.coder {
-  font-size: 10px;
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  margin-right: 8px;
-  margin-bottom: 5px;
-  color: white;
-}
-.checkbox-wrapper-64 {
-  padding: 4px;
-  width: calc(50% - 20px);
-  box-sizing: border-box;
-  text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f4f6f8; /* Açık gri arka plan */
+    color: #333; /* Koyu gri metin */
+    width: 280px; /* Biraz daha geniş */
+    padding: 0;
+    line-height: 1.6;
 }
 
-.checkbox-wrapper-64 input[type="checkbox"] {
-  visibility: hidden;
-  display: none;
+.container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Öğeler arası boşluk */
 }
 
-.checkbox-wrapper-64 *,
-.checkbox-wrapper-64 ::after,
-.checkbox-wrapper-64 ::before {
-  box-sizing: border-box;
+/* Header */
+.header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
 }
 
-.checkbox-wrapper-64 .switch {
-  font-size: 17px;
-  position: relative;
-  display: inline-block;
-  width: 3em;
-  height: 1.5em;
+.logo {
+    width: 32px; /* Logonun boyutu */
+    height: 32px;
 }
 
-/* Hide default HTML checkbox */
-.checkbox-wrapper-64 .switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+.header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50; /* Koyu mavi-gri başlık */
 }
 
-/* The slider */
-.checkbox-wrapper-64 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #fff;
-  border: 1px solid #adb5bd;
-  transition: 0.4s;
-  border-radius: 30px;
+/* Buton Grubu */
+.button-group {
+    display: grid;
+    grid-template-columns: 1fr; /* Tek sütunlu düzen */
+    gap: 10px;
 }
 
-.checkbox-wrapper-64 .slider:before {
-  position: absolute;
-  content: "";
-  height: 1.4em;
-  width: 1.4em;
-  border-radius: 20px;
-  left: 0.12em;
-  background-color: #adb5bd;
-  transition: 0.4s;
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px; /* Yumuşak köşeler */
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+    text-align: center;
 }
 
-.checkbox-wrapper-64 input:checked + .slider {
-  background-color: darkred;
-  border: 1px solid darkred;
+.btn:hover {
+    opacity: 0.9;
+}
+.btn:active {
+    transform: translateY(1px);
 }
 
-.checkbox-wrapper-64 input:focus + .slider {
-  box-shadow: 0 0 1px darkred;
+.btn-primary {
+    background-color: #8B0000; /* SAÜ Kırmızısı veya koyu kırmızı */
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #a50000;
 }
 
-.checkbox-wrapper-64 input:checked + .slider:before {
-  transform: translateX(1.4em);
-  background-color: #fff;
+.btn-secondary {
+    background-color: #e9ecef; /* Açık gri buton */
+    color: #343a40; /* Koyu gri metin */
+    border: 1px solid #ced4da;
+}
+.btn-secondary:hover {
+    background-color: #d3d9df;
+}
+
+.btn svg {
+    margin-right: 5px; /* İkon ve metin arası boşluk */
+}
+
+
+/* Toggle Bölümü */
+.toggle-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #e0e0e0; /* Butonlardan ayıran çizgi */
+}
+
+.toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0; /* Dikey dolgu */
+}
+
+.toggle-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+}
+
+/* Switch Stilleri (Öncekiyle benzer ama renkler güncellendi) */
+.switch {
+    font-size: 17px; /* Slider boyutunu etkiler */
+    position: relative;
+    display: inline-block;
+    width: 3em; /* Genişlik */
+    height: 1.5em; /* Yükseklik */
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc; /* Kapalıyken arka plan */
+    border: 1px solid #bbb;
+    transition: .4s;
+    border-radius: 30px; /* Yuvarlak kenarlar */
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 1.2em; /* İç topun boyutu */
+    width: 1.2em;  /* İç topun boyutu */
+    left: 0.15em; /* Sol boşluk */
+    bottom: 0.15em; /* Alt boşluk */
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%; /* Tamamen yuvarlak */
+}
+
+input:checked + .slider {
+    background-color: #8B0000; /* Aktifken koyu kırmızı */
+    border-color: #7a0000;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #8B0000;
+}
+
+input:checked + .slider:before {
+    transform: translateX(1.5em); /* Topun kayma mesafesi */
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    font-size: 11px;
+    color: #868e96; /* Soluk gri */
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    margin-top: auto; /* En alta yapışmasını sağlar */
 }
