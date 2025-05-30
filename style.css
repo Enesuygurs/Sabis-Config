@@ -107,7 +107,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0; /* Dikey dolgu */
+    padding: 2px 0; /* Dikey dolgu */
 }
 
 .toggle-label {
@@ -147,13 +147,13 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 1.2em; /* İç topun boyutu */
-    width: 1.2em;  /* İç topun boyutu */
-    left: 0.15em; /* Sol boşluk */
-    bottom: 0.15em; /* Alt boşluk */
+    height: 1.1em;
+    width: 1.2em;
+    left: 0.1em;
+    bottom: 0.15em;
     background-color: white;
     transition: .4s;
-    border-radius: 50%; /* Tamamen yuvarlak */
+    border-radius: 50%;
 }
 
 input:checked + .slider {
