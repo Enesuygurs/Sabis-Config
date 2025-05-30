@@ -1,53 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="tr">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAÜ Config</title>
-    <script src="popup.js"></script>
     <link rel="stylesheet" href="style.css" />
-  </head>
+    <!-- Google Fonts (Opsiyonel - Modern bir font için) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="images/icon48.png" alt="SAÜ Config Logo" class="logo">
+            <h1>SAÜ Config</h1>
+        </header>
 
-  <body>
-    <div class="mainArea">
-      <a class="baslik">SAÜ Config</a>
-      <button id="changeGrades" class="buton">Change Grades</button>
-      <button id="autoFillSurvey" class="buton">Auto Fill Survey</button>
-      <button id="checkQuestions" class="buton">Check Questions</button>
-      <div class="toggleArea">
-        <div class="checkbox-wrapper-64">
-          <a class="baslik">Red Theme</a>
-          <label class="switch">
-            <input type="checkbox" id="themeCheckbox" />
-            <span class="slider"></span>
-          </label>
+        <div class="button-group">
+            <button id="changeGrades" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                </svg>
+                Notları Değiştir
+            </button>
+            <button id="autoFillSurvey" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-ui-checks" viewBox="0 0 16 16">
+                    <path d="M7 2.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zM2 1a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2H2zm0 8a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H2zm.854-3.646a.5.5 0 0 1-.708 0l-1-1a.5.5 0 1 1 .708-.708l.646.647 1.646-1.647a.5.5 0 1 1 .708.708l-2 2zm0 8a.5.5 0 0 1-.708 0l-1-1a.5.5 0 0 1 .708-.708l.646.647 1.646-1.647a.5.5 0 0 1 .708.708l-2 2zM7 10.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5v-1zm0-5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 8a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+                Anketi Doldur
+            </button>
+            <button id="checkQuestions" class="btn btn-secondary">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-patch-check" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10.354 6.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7 8.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                    <path d="m10.273 2.513-.921-.944.715-.69c.6-1.278.039-2.118-.864-2.118-1.006 0-1.502.752-1.735 1.174-.24.434-.526.956-.847 1.176-.42.287-1.002.255-1.492.01L2.705 1.87.69 3.143l.944.921.008.008.058.058.018.018.827.828.009.009.005.005.014.014.008.008.005.005.009.009.01.01.046.045.008.007.05.049.005.004.042.04.015.014.004.004.028.026.005.004.04.035.004.003.032.028.005.004.024.02.005.004.017.014.004.003.012.01.005.004.006.005.004.003.01.007.004.003.005.004.004.003.003.002l.003.002.002.002.002.001h.002Z"/>
+                    <path d="M10.067 4.97a.5.5 0 0 0-.707-.707l-1.57 1.57c-.351-.148-.69-.34-.994-.578a.5.5 0 0 0-.58.053L5.04 6.61a.5.5 0 0 0 .03.745l1.562 1.226c.19.149.406.275.63.388l1.172 2.856a.5.5 0 0 0 .95.063l1.19-2.635 1.844 1.435a.5.5 0 0 0 .665-.146l.903-1.204a.5.5 0 0 0-.13-.732l-1.746-1.262a4.98 4.98 0 0 1-.99.429l-.926-.926.99-.429c.098-.042.196-.087.293-.136l.99-.454ZM3.659 11.01a4.015 4.015 0 0 0-2.101-3.207.5.5 0 0 0-.85.385v1.94a.5.5 0 0 0 .057.227l.004.009.012.024.022.043.036.064.05.086.066.107.082.129.03.046c.032.047.066.092.102.136.036.043.074.086.114.126.04.04.083.078.127.114.045.037.09.07.137.1.046.03.094.057.143.081.05.024.098.045.148.064.05.02.102.037.154.052.052.015.105.026.159.034.053.008.107.012.162.013h.007a1.83 1.83 0 0 1 .41-.025.5.5 0 0 0 .448-.625l-.339-1.016c.293-.066.577-.153.843-.26l.926.926-.843.26a.5.5 0 0 0-.236.903l.994.578.993-.578.412-.714a.5.5 0 0 0-.788-.553l-.412.714-.522-.301a.5.5 0 0 0-.588.106L4.49 12.86l-.236-.902a.5.5 0 0 0-.68-.381l-.993.577-.994-.577.708-.707-.708-.707.176-.176Z"/>
+                </svg>
+                Soruları Kontrol Et
+            </button>
         </div>
 
-        <div class="checkbox-wrapper-64">
-          <a class="baslik">Dark Theme</a>
-          <label class="switch">
-            <input type="checkbox" id="themeDarkCheckbox" />
-            <span class="slider"></span>
-          </label>
+        <div class="toggle-section">
+            <div class="toggle-item">
+                <span class="toggle-label">Kırmızı Tema</span>
+                <label class="switch">
+                    <input type="checkbox" id="themeCheckbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-item">
+                <span class="toggle-label">Karanlık Tema</span>
+                <label class="switch">
+                    <input type="checkbox" id="themeDarkCheckbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-item">
+                <span class="toggle-label">Gizli Mod</span>
+                <label class="switch">
+                    <input type="checkbox" id="stealthCheckbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="toggle-item">
+                <span class="toggle-label">Not Hesapla</span>
+                <label class="switch">
+                    <input type="checkbox" id="calculateCheckbox" />
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
 
-        <div class="checkbox-wrapper-64">
-          <a class="baslik">Stealth Mode</a>
-          <label class="switch">
-            <input type="checkbox" id="stealthCheckbox" />
-            <span class="slider"></span>
-          </label>
-        </div>
-
-        <div class="checkbox-wrapper-64">
-          <a class="baslik">Calculate Grade</a>
-          <label class="switch">
-            <input type="checkbox" id="calculateCheckbox" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
+        <footer class="footer">
+            Created by Enes Uygur
+        </footer>
     </div>
-    <a class="coder">Created by Enes Uygur</a>
-  </body>
+    <script src="popup.js"></script>
+</body>
 </html>
