@@ -1,0 +1,112 @@
+body {
+  width: 250px;
+  background-color: #141414;
+  padding: 10px 20px 20px 20px;
+}
+.buton {
+  background: darkred;
+  color: white;
+  padding: 13px;
+  border: azure 2px;
+  font-family: sans-serif;
+  margin: 3px;
+}
+.mainArea {
+  align-items: center;
+  justify-content: center;
+  display: grid;
+}
+.toggleArea {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.baslik {
+  font-size: 16px;
+  text-align: center;
+  display: block;
+  margin-top: 7px;
+  margin-bottom: 7px;
+  font-weight: 700;
+  color: white;
+}
+.coder {
+  font-size: 10px;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  margin-right: 8px;
+  margin-bottom: 5px;
+  color: white;
+}
+.checkbox-wrapper-64 {
+  padding: 4px;
+  width: calc(50% - 20px);
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.checkbox-wrapper-64 input[type="checkbox"] {
+  visibility: hidden;
+  display: none;
+}
+
+.checkbox-wrapper-64 *,
+.checkbox-wrapper-64 ::after,
+.checkbox-wrapper-64 ::before {
+  box-sizing: border-box;
+}
+
+.checkbox-wrapper-64 .switch {
+  font-size: 17px;
+  position: relative;
+  display: inline-block;
+  width: 3em;
+  height: 1.5em;
+}
+
+/* Hide default HTML checkbox */
+.checkbox-wrapper-64 .switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.checkbox-wrapper-64 .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fff;
+  border: 1px solid #adb5bd;
+  transition: 0.4s;
+  border-radius: 30px;
+}
+
+.checkbox-wrapper-64 .slider:before {
+  position: absolute;
+  content: "";
+  height: 1.4em;
+  width: 1.4em;
+  border-radius: 20px;
+  left: 0.12em;
+  background-color: #adb5bd;
+  transition: 0.4s;
+}
+
+.checkbox-wrapper-64 input:checked + .slider {
+  background-color: darkred;
+  border: 1px solid darkred;
+}
+
+.checkbox-wrapper-64 input:focus + .slider {
+  box-shadow: 0 0 1px darkred;
+}
+
+.checkbox-wrapper-64 input:checked + .slider:before {
+  transform: translateX(1.4em);
+  background-color: #fff;
+}
