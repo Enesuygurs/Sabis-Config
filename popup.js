@@ -198,20 +198,47 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Check Questions
-    if (checkQuestionsBtn) {
+     if (checkQuestionsBtn) {
         checkQuestionsBtn.addEventListener("click", () => {
             chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
                 if (!tab?.url || tab.url.startsWith("chrome://") || !tab.id) return;
+
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     function: () => {
-                        document.querySelectorAll(".swal2-html-container > div > span").forEach((element) => {
-                            const text = element.textContent;
-                            const isZero = text.includes("Puan: 0");
-                            element.style.setProperty("background", isZero ? "#830000" : "green", "important");
-                            element.style.setProperty("color", "white", "important");
-                            element.style.setProperty("border", `2px solid ${isZero ? "#5d0d0d" : "green"}`, "important");
-                        });
+                        // .swal2-html-container içindeki tüm span'ları seçmek yerine,
+                        // her bir soru-puan satırını temsil eden div'leri veya ana konteyneri hedefleyebiliriz.
+                        // Ya da daha iyisi, sadece "Puan:" içeren span'ları hedefleyelim.
+                        
+                        const container = document.querySelector(".swal2-html-container > div");
+                        if (container) {
+                            // Her bir satırı (br ile ayrılmış) veya doğrudan span'ları işleyebiliriz.
+                            // Örnek HTML'de her satır bir "Soru: X - Puan: Y" şeklinde.
+                            // Ve her "Soru:" ve "Puan:" ayrı span'larda.
+                            // Sadece "Puan:" içeren span'ları renklendireceğiz.
+                            // "Soru:" içeren span'lara dokunmayacağız.
+
+                            const allSpans = container.querySelectorAll("span");
+                            allSpans.forEach(spanElement => {
+                                const text = spanElement.textContent;
+                                if (text.includes("Puan:")) {
+                                    // Bu bir puan span'ı, bunu renklendir.
+                                    const isZero = text.includes("Puan: 0"); // Puanın 0 olup olmadığını kontrol et
+                                    // "Puan: 0.0" gibi durumları da yakalamak için regex daha iyi olabilir
+                                    // const isZero = /Puan:\s*0(\.0*)?/.test(text);
+
+
+                                    spanElement.style.setProperty("background", isZero ? "#830000" : "green", "important");
+                                    spanElement.style.setProperty("color", "white", "important");
+                                    spanElement.style.setProperty("border", `2px solid ${isZero ? "#5d0d0d" : "#0d5f0d"}`, "important");
+                                } else if (text.includes("Soru:")) {
+                                    // Bu bir soru span'ı, buna dokunma veya varsayılan stili uygula
+                                    spanElement.style.background = "";
+                                    spanElement.style.color = "";
+                                    spanElement.style.border = "";
+                                }
+                            });
+                        }
                     },
                 });
             });
