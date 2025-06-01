@@ -1,10 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const STORAGE_KEY_REDMODE = "redmode_state"; // Sabit isimleri daha açıklayıcı yaptım
+    const STORAGE_KEY_REDMODE = "redmode_state";
     const STORAGE_KEY_CALCULATE = "calculate_state";
     const STORAGE_KEY_STEALTH = "stealth_state";
     const STORAGE_KEY_DARKMODE = "darkmode_state";
+    // Depolama anahtarları artık background'da yönetiliyor ama popup'ta okuma için kullanılabilir.
     const STORAGE_KEY_STUDENT_PROFILE = "studentProfile";
     const STORAGE_KEY_STUDENT_GNO = "studentGNO";
+
 
     const changeGradesBtn = document.getElementById("changeGrades");
     const stealthCheckbox = document.getElementById("stealthCheckbox");
@@ -14,7 +16,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkQuestionsBtn = document.getElementById("checkQuestions");
     const autoFillSurveyBtn = document.getElementById("autoFillSurvey");
 
-    // Öğrenci Bilgi Kartı Elementleri
     const studentPhotoEl = document.getElementById("studentPhoto");
     const studentNameEl = document.getElementById("studentName");
     const studentDepartmentEl = document.getElementById("studentDepartment");
@@ -22,104 +23,125 @@ document.addEventListener("DOMContentLoaded", function () {
     const studentGNOEl = document.getElementById("studentGNO");
     const refreshStudentInfoBtn = document.getElementById("refreshStudentInfo");
 
-    function loadStudentInfo() {
+    function displayLoadingState() {
         studentNameEl.textContent = 'Yükleniyor...';
         studentDepartmentEl.textContent = 'Yükleniyor...';
-        studentNumberEl.textContent = 'Öğrenci No: Yükleniyor...';
+        studentNumberEl.textContent = 'Yükleniyor...';
         studentGNOEl.textContent = 'GNO: Yükleniyor...';
-        studentPhotoEl.src = 'images/icon48.png'; // Varsayılan
+        studentPhotoEl.src = 'images/icon48.png';
+    }
 
-        chrome.storage.local.get([STORAGE_KEY_STUDENT_PROFILE, STORAGE_KEY_STUDENT_GNO], function (data) {
+    function updatePopupWithData(profile, gno) {
+        if (profile) {
+            studentNameEl.textContent = profile.name || 'N/A';
+            studentDepartmentEl.textContent = profile.department || 'N/A';
+            studentNumberEl.textContent = profile.number || 'N/A';
+            if (profile.imageUrl && profile.imageUrl !== 'images/icon48.png') {
+                studentPhotoEl.src = profile.imageUrl;
+            } else {
+                studentPhotoEl.src = 'images/icon48.png';
+            }
+            studentPhotoEl.onerror = function() { this.src = 'images/icon48.png'; };
+        } else {
+            studentNameEl.textContent = 'Bilgi Yok';
+            studentDepartmentEl.textContent = 'Veri çekilemedi';
+            studentNumberEl.textContent = '-'; 
+            studentPhotoEl.src = 'images/icon48.png';
+        }
+
+        if (gno && gno !== 'N/A') {
+            studentGNOEl.textContent = `GNO: ${gno}`;
+        } else if (profile && profile.name === "Giriş Yapılmamış") {
+             studentGNOEl.textContent = 'GNO: -';
+        }
+        else {
+            studentGNOEl.textContent = 'GNO: N/A';
+        }
+    }
+
+    function loadAndDisplayStudentInfo() {
+        displayLoadingState();
+        // Önce storage'dan okumayı dene (hızlı yükleme için)
+        chrome.storage.local.get([STORAGE_KEY_STUDENT_PROFILE, STORAGE_KEY_STUDENT_GNO], function (storedData) {
             if (chrome.runtime.lastError) {
-                console.error("Depodan öğrenci bilgileri okunurken hata:", chrome.runtime.lastError.message);
-                studentNameEl.textContent = 'Hata oluştu';
-                return;
+                console.error("Depodan ilk okuma hatası:", chrome.runtime.lastError.message);
             }
-
-            const profile = data[STORAGE_KEY_STUDENT_PROFILE];
-            const gno = data[STORAGE_KEY_STUDENT_GNO];
-
-            if (profile) {
-                studentNameEl.textContent = profile.name || 'N/A';
-                studentDepartmentEl.textContent = profile.department || 'N/A';
-                studentNumberEl.textContent = `Öğrenci No: ${profile.number || 'N/A'}`;
-                if (profile.imageUrl && profile.imageUrl !== 'images/icon48.png') { // Sadece geçerli bir URL varsa değiştir
-                    studentPhotoEl.src = profile.imageUrl;
-                } else {
-                    studentPhotoEl.src = 'images/icon48.png'; // Varsayılan
+            if (storedData.studentProfile || storedData.studentGNO) {
+                console.log("Depodan önbelleklenmiş veri yüklendi.");
+                updatePopupWithData(storedData.studentProfile, storedData.studentGNO);
+            }
+            // Her durumda veriyi arka planda tazelemeyi iste (veya sadece refresh butonuna basınca)
+            // Şimdilik popup her açıldığında tazeleme isteği gönderelim
+            // Daha iyi bir strateji: Belirli aralıklarla veya sadece refresh ile
+            console.log("Arka plandan taze veri isteniyor...");
+            chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Veri çekme mesajı gönderilemedi:", chrome.runtime.lastError.message);
+                    // Hata durumunda, eğer önbellek varsa o gösterilir, yoksa "Hata" mesajı kalır.
+                    if (!storedData.studentProfile && !storedData.studentGNO) {
+                        updatePopupWithData(null, null); // Hata durumunu göster
+                    }
+                    return;
                 }
-                 studentPhotoEl.onerror = function() { // Resim yüklenemezse varsayılana dön
-                    this.src = 'images/icon48.png';
-                };
-            } else {
-                studentNameEl.textContent = 'Bilgi Yok';
-                studentDepartmentEl.textContent = 'Ana sayfayı ziyaret edin';
-                studentNumberEl.textContent = 'Öğrenci No: -';
-            }
-
-            if (gno) {
-                studentGNOEl.textContent = `GNO: ${gno}`;
-            } else {
-                studentGNOEl.textContent = 'GNO: Transkripti ziyaret edin';
-            }
+                if (response && response.status === "completed" && response.data) {
+                    console.log("Arka plandan taze veri alındı:", response.data);
+                    updatePopupWithData(response.data.profile, response.data.gno);
+                } else if (response && response.status === "error") {
+                    console.error("Arka plan veri çekme hatası:", response.message);
+                     if (!storedData.studentProfile && !storedData.studentGNO) { // Sadece hiç önbellek yoksa hata göster
+                        studentNameEl.textContent = "Veri Alınamadı";
+                        studentDepartmentEl.textContent = "";
+                        studentNumberEl.textContent = "";
+                        studentGNOEl.textContent = "";
+                    }
+                } else {
+                     // Beklenmedik yanıt veya veri yok
+                     console.warn("Arka plandan beklenen veri gelmedi.", response);
+                     if (!storedData.studentProfile && !storedData.studentGNO && !(response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış")) {
+                        // Eğer önbellek yoksa ve gelen veri de "Giriş Yapılmamış" değilse, bir sorun var demektir.
+                        updatePopupWithData(null, null);
+                    } else if (response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış"){
+                        updatePopupWithData(response.data.profile, response.data.gno);
+                    }
+                }
+            });
         });
     }
 
-    // Popup açıldığında öğrenci bilgilerini yükle
-    loadStudentInfo();
+    // Popup açıldığında öğrenci bilgilerini yükle ve tazelemeye çalış
+    loadAndDisplayStudentInfo();
 
-    // Yenileme Butonu
     if(refreshStudentInfoBtn) {
         refreshStudentInfoBtn.addEventListener("click", () => {
-            // Aktif SABİS sekmelerinde content script'i tetikle (veya sadece ana sayfa ve transkript için)
-            // Bu, content script'lerin veriyi tekrar çekip depolamasını sağlar.
-            // Ardından loadStudentInfo'yu çağırarak popup'ı güncelleriz.
-            
-            studentNameEl.textContent = 'Yenileniyor...'; // Kullanıcıya geri bildirim
-            // Bir timeout ile verinin çekilmesi için zaman tanıyalım
-            // Gerçekte, content script'ten mesaj alıp sonra güncellemek daha doğru olurdu.
-
-            chrome.tabs.query({ url: "*://*.sakarya.edu.tr/*" }, function (tabs) {
-                tabs.forEach(tab => {
-                    if (tab.url.includes("sabis.sakarya.edu.tr")) { // Sadece SABİS sekmeleri
-                        // Hangi scriptin hangi sayfada çalışacağını content.js zaten biliyor.
-                        // Bu yüzden sadece sayfayı yeniden yüklemesini isteyebiliriz ya da
-                        // content script'e özel bir mesaj gönderebiliriz.
-                        // Şimdilik basitçe, content script'in bir sonraki yüklemede veriyi alacağını varsayıyoruz.
-                        // Daha gelişmiş bir yöntem:
-                        chrome.scripting.executeScript({
-                            target: { tabId: tab.id },
-                            function: () => {
-                                // content.js içindeki scrapeAndStoreStudentInfo ve scrapeAndStoreGNO'nun
-                                // tekrar çalışmasını tetikleyecek bir mantık.
-                                // Örn: Bu fonksiyonları doğrudan çağırabiliriz (eğer globale tanımlıysa)
-                                // veya sayfayı yeniden yükleyebiliriz.
-                                // Şimdilik en basit yol, content script'in sayfa yüklemesinde çalışmasına güvenmek.
-                                // Daha iyi bir çözüm için background script üzerinden mesajlaşma gerekebilir.
-                                if (typeof scrapeAndStoreStudentInfo === 'function' && (window.location.pathname === '/' || window.location.pathname === '/Home/Index' || document.querySelector('#kt_profile_aside'))) {
-                                     scrapeAndStoreStudentInfo();
-                                }
-                                if (typeof scrapeAndStoreGNO === 'function' && window.location.href.includes("/Transkript")) {
-                                     scrapeAndStoreGNO();
-                                }
-                            }
-                        }).then(() => {
-                            console.log("Veri çekme fonksiyonları tetiklendi (eğer sayfalar açıksa).");
-                        }).catch(err => console.error("Script çalıştırma hatası:", err));
+            displayLoadingState(); // "Yükleniyor..." göster
+            chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Yenileme mesajı gönderilemedi:", chrome.runtime.lastError.message);
+                    updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, null);
+                    return;
+                }
+                if (response && response.status === "completed" && response.data) {
+                    updatePopupWithData(response.data.profile, response.data.gno);
+                } else if (response && response.status === "error") {
+                    console.error("Yenileme sırasında arka plan hatası:", response.message);
+                    studentNameEl.textContent = "Yenilenemedi";
+                    studentNumberEl.textContent = "-";
+                } else {
+                    console.warn("Yenileme sırasında beklenen veri gelmedi.", response);
+                     if (response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış"){
+                        updatePopupWithData(response.data.profile, response.data.gno);
+                    } else {
+                        updatePopupWithData({name: "Veri Yok", department:"Veri Yok", number:"-", imageUrl: 'images/icon48.png'}, null);
                     }
-                });
+                }
             });
-
-            // Kısa bir gecikmeyle bilgileri tekrar yükle (verilerin depoya yazılması için zaman tanımak adına)
-            setTimeout(loadStudentInfo, 1500); // 1.5 saniye sonra
         });
     }
 
-
+    // ... (Diğer buton ve toggle event listener'ları aynı kalacak, yukarıdaki popup.js'den alabilirsin) ...
     // Change Grades
     if (changeGradesBtn) {
         changeGradesBtn.addEventListener("click", () => {
-            // ... (mevcut changeGrades kodu) ...
             const userInput = prompt("Lütfen 0 ile 100 arasında bir sayı girin:");
             const userNumber = parseInt(userInput);
 
@@ -135,20 +157,40 @@ document.addEventListener("DOMContentLoaded", function () {
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     args: [userNumber],
-                    function: (userNum) => { // Argüman adını değiştirdim karışmaması için
-                        const textRightElements = document.querySelectorAll(".text-right > span");
+                    function: (userNum) => { 
+                        const textRightElements = document.querySelectorAll(".text-right > span:first-child"); // Sadece ana notu hedefle
                         textRightElements.forEach((element) => {
-                            let number = parseInt(element.textContent.trim());
-                            if (!isNaN(number)) {
-                                element.textContent = userNum;
+                            // Altında sub-score span'ı olup olmadığını kontrol et, varsa sadece text node'u değiştir
+                            let mainTextNode = null;
+                            for (let child of element.childNodes) {
+                                if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== "") {
+                                    mainTextNode = child;
+                                    break;
+                                }
+                            }
+                            if(mainTextNode){
+                               const currentGradeText = mainTextNode.textContent.trim().split(" ")[0];
+                               if (!isNaN(parseInt(currentGradeText)) || currentGradeText === "-" || currentGradeText.toLowerCase() === "not") {
+                                   mainTextNode.textContent = userNum.toString() + " "; // Boşluk bırak ki sub-score yapışmasın
+                               }
+                            } else if (!element.querySelector("span[data-calculated-score='sub']")) { // Eğer sub-score yoksa ve text node bulunamadıysa direkt ata
+                                if (!isNaN(parseInt(element.textContent.trim())) || element.textContent.trim() === "-" || element.textContent.trim().toLowerCase() === "not") {
+                                   element.textContent = userNum;
+                                }
                             }
                         });
 
                         const textRightElementss = document.querySelectorAll(".text-right.font-weight-bold span");
                         textRightElementss.forEach((element) => {
-                            element.textContent = ""; // Harf notunu sil
-                            element.style.setProperty("color", "green", "important"); // Opsiyonel: Renk
+                            element.textContent = ""; 
+                            element.style.setProperty("color", "green", "important"); 
                         });
+                         // Notlar değişti, content.js'in yeniden hesaplama yapması lazım
+                        if (typeof enableCalculateGrade === "function") { // Eğer content script'te varsa
+                            enableCalculateGrade();
+                        } else { // Yoksa, content script'e mesaj gönder
+                            chrome.tabs.sendMessage(tab.id, {action: "recalculateGradesAfterChange"});
+                        }
                     },
                 });
             });
@@ -158,10 +200,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Check Questions
     if (checkQuestionsBtn) {
         checkQuestionsBtn.addEventListener("click", () => {
-            // ... (mevcut checkQuestions kodu) ...
             chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
                 if (!tab?.url || tab.url.startsWith("chrome://") || !tab.id) return;
-
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     function: () => {
@@ -181,10 +221,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Auto Fill Survey
     if (autoFillSurveyBtn) {
         autoFillSurveyBtn.addEventListener("click", () => {
-            // ... (mevcut autoFillSurvey kodu) ...
             chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
                 if (!tab?.url || tab.url.startsWith("chrome://") || !tab.id) return;
-
                 chrome.scripting.executeScript({
                     target: { tabId: tab.id },
                     function: () => {
@@ -201,85 +239,46 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
-
-    // Toggle Butonları
-    // Stealth Mode
-    if (stealthCheckbox) {
-        chrome.storage.local.get(STORAGE_KEY_STEALTH, function (data) {
-            stealthCheckbox.checked = !!data[STORAGE_KEY_STEALTH];
-        });
-        stealthCheckbox.addEventListener("change", () => {
-            chrome.storage.local.set({ [STORAGE_KEY_STEALTH]: stealthCheckbox.checked });
-            chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                if (tab?.id && !tab.url.startsWith("chrome://")) {
-                    chrome.tabs.reload(tab.id);
-                }
-            });
-        });
-    }
-
-    // Calculate Grades
-    if (calculateCheckbox) {
-        chrome.storage.local.get(STORAGE_KEY_CALCULATE, function (data) {
-            calculateCheckbox.checked = !!data[STORAGE_KEY_CALCULATE];
-        });
-        calculateCheckbox.addEventListener("change", function () {
-            const isChecked = calculateCheckbox.checked;
-            chrome.storage.local.set({ [STORAGE_KEY_CALCULATE]: isChecked });
-            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                const currentTab = tabs[0];
-                if (!currentTab || !currentTab.id || !currentTab.url) return;
-                const targetUrl = "https://obs.sabis.sakarya.edu.tr/Ders";
-                if (!currentTab.url.startsWith(targetUrl)) return;
-
-                // Mesajı background.js'e göndermek yerine doğrudan content script'i tetikle
-                // veya content script'in storage değişikliğini dinlemesini sağla.
-                // Şimdilik, sayfanın yenilenmesiyle content script'in tekrar çalışacağını varsayabiliriz
-                // veya content script'e mesaj göndererek anında güncelleme yapabiliriz.
-                // En basit yol, content script'in depolama değişikliğini dinlemesi veya sayfanın yenilenmesi.
-                // calculate_state değiştiğinde /Ders sayfasındaysak sayfayı yenileyelim.
-                chrome.tabs.reload(currentTab.id);
-            });
-        });
-    }
     
-    // Red Theme
-    if (themeCheckbox) {
-        chrome.storage.local.get(STORAGE_KEY_REDMODE, function (data) {
-            themeCheckbox.checked = !!data[STORAGE_KEY_REDMODE];
+    // Toggle Butonları
+    function setupToggle(checkboxId, storageKey, reloadOnChange = true, removeFunction) {
+        const checkbox = document.getElementById(checkboxId);
+        if (!checkbox) return;
+
+        chrome.storage.local.get(storageKey, function (data) {
+            checkbox.checked = !!data[storageKey];
         });
-        themeCheckbox.addEventListener("change", () => {
-            const isChecked = themeCheckbox.checked;
-            chrome.storage.local.set({ [STORAGE_KEY_REDMODE]: isChecked });
-            chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                if (tab?.id && !tab.url.startsWith("chrome://")) {
-                    isChecked ? chrome.tabs.reload(tab.id) : removeTheme(tab.id);
-                }
-            });
+
+        checkbox.addEventListener("change", () => {
+            const isChecked = checkbox.checked;
+            chrome.storage.local.set({ [storageKey]: isChecked });
+
+            if (reloadOnChange) {
+                chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+                    if (tab?.id && tab.url && !tab.url.startsWith("chrome://") && tab.url.includes("sakarya.edu.tr")) {
+                        if (removeFunction && !isChecked) {
+                            removeFunction(tab.id);
+                        } else {
+                            chrome.tabs.reload(tab.id);
+                        }
+                    }
+                });
+            }
         });
     }
-    function removeTheme(tabId) {
+
+    setupToggle("stealthCheckbox", STORAGE_KEY_STEALTH);
+    setupToggle("calculateCheckbox", STORAGE_KEY_CALCULATE); // Calculate için sayfa yenileme yeterli, content.js storage'ı dinleyip kendi ayarlar
+    setupToggle("themeCheckbox", STORAGE_KEY_REDMODE, true, removeTheme);
+    setupToggle("themeDarkCheckbox", STORAGE_KEY_DARKMODE, true, removeDarkTheme);
+
+    function removeTheme(tabId) { // Bu fonksiyonlar zaten vardı, tekrar tanımlamaya gerek yok ama burada kalsın
         chrome.scripting.executeScript({
             target: { tabId },
             function: () => document.getElementById("redmode")?.remove(),
         });
     }
 
-    // Dark Theme
-    if (themeDarkCheckbox) {
-        chrome.storage.local.get(STORAGE_KEY_DARKMODE, function (data) {
-            themeDarkCheckbox.checked = !!data[STORAGE_KEY_DARKMODE];
-        });
-        themeDarkCheckbox.addEventListener("change", () => {
-            const isChecked = themeDarkCheckbox.checked;
-            chrome.storage.local.set({ [STORAGE_KEY_DARKMODE]: isChecked });
-            chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                if (tab?.id && !tab.url.startsWith("chrome://")) {
-                    isChecked ? chrome.tabs.reload(tab.id) : removeDarkTheme(tab.id);
-                }
-            });
-        });
-    }
     function removeDarkTheme(tabId) {
         chrome.scripting.executeScript({
             target: { tabId },

@@ -28,8 +28,8 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    /* border-bottom: 1px solid #e0e0e0; Artık karttan sonra çizgi olacak */
-    padding-bottom: 0; /* Header altındaki boşluk azaltıldı */
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
 }
 
 .logo {
@@ -186,7 +186,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 6px 0; /* Toggle item padding ayarlandı */
+    padding: 2px 0; /* Toggle item padding ayarlandı */
 }
 
 .toggle-label {
@@ -226,9 +226,9 @@ body {
 .slider:before {
     position: absolute;
     content: "";
-    height: 1.2em;
+    height: 1.1em;
     width: 1.2em;
-    left: 0.15em;
+    left: 0.1em;
     bottom: 0.15em;
     background-color: white;
     transition: .4s;

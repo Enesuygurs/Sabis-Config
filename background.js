@@ -1,7 +1,183 @@
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === "calculateGrades") calculateGrades();
-  else if (message.action === "removeCalculatedGrades") removeCalculatedGrades();
-});
+const STUDENT_PROFILE_URL = "https://obs.sabis.sakarya.edu.tr/";
+const TRANSCRIPT_URL = "https://obs.sabis.sakarya.edu.tr/Transkript";
+const OFFSCREEN_DOCUMENT_PATH = 'offscreen.html';
+
+let creatingOffscreen; // Offscreen doküman oluşturma Promise'ını tutar
+async function setupOffscreenDocument() {
+    // Aktif offscreen dokümanı var mı kontrol et
+    const existingContexts = await chrome.runtime.getContexts({
+        contextTypes: ['OFFSCREEN_DOCUMENT'],
+        documentUrls: [chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH)]
+    });
+
+    if (existingContexts.length > 0) {
+        return;
+    }
+
+    // Henüz oluşturulmuyorsa ve yoksa oluştur
+    if (creatingOffscreen) {
+        await creatingOffscreen;
+    } else {
+        creatingOffscreen = chrome.offscreen.createDocument({
+            url: OFFSCREEN_DOCUMENT_PATH,
+            reasons: ['DOM_PARSER'],
+            justification: 'SABİS sayfalarından öğrenci bilgilerini ve GNO\'yu parse etmek.',
+        });
+        await creatingOffscreen;
+        creatingOffscreen = null;
+    }
+}
+async function fetchAndParseViaOffscreen(url, parseAction) {
+    await setupOffscreenDocument();
+    try {
+        const response = await fetch(url, { credentials: 'include' });
+        if (!response.ok) {
+            console.error(`Sayfa alınamadı ${url}: ${response.status} ${response.statusText}`);
+            return parseAction === "parseHtmlForGNO" ? 'N/A' : null;
+        }
+        const htmlText = await response.text();
+
+        const result = await chrome.runtime.sendMessage({
+            action: parseAction,
+            htmlContent: htmlText,
+            target: 'offscreen' // Offscreen dokümanına hedefleme (bu aslında gerekmeyebilir, sendMessage tüm context'lere gider)
+        });
+        // await closeOffscreenDocument(); // İsteğe bağlı: her işlemden sonra kapat
+        return result;
+
+    } catch (error) {
+        console.error(`Sayfa çekme/offscreen parse etme hatası ${url}:`, error);
+        // await closeOffscreenDocument(); // Hata durumunda da kapat
+        return parseAction === "parseHtmlForGNO" ? 'N/A' : null;
+    }
+}
+async function closeOffscreenDocument() {
+    // Belirli bir süre sonra veya iş bittikten sonra kapatılabilir.
+    // Şimdilik manuel kapatmıyoruz, Chrome yönetebilir.
+    // Ya da her işlemden sonra:
+    // await chrome.offscreen.closeDocument();
+}
+
+
+async function fetchAndParseHTML(url) {
+    try {
+        const response = await fetch(url, { credentials: 'include' }); // Çerezleri dahil et
+        if (!response.ok) {
+            console.error(`Sayfa alınamadı ${url}: ${response.status} ${response.statusText}`);
+            return null;
+        }
+        const htmlText = await response.text();
+        const parser = new DOMParser();
+        return parser.parseFromString(htmlText, "text/html");
+    } catch (error) {
+        console.error(`Sayfa çekme/parse etme hatası ${url}:`, error);
+        return null;
+    }
+}
+
+function extractStudentInfoFromDOM(doc) {
+    if (!doc) return null;
+
+    const nameFromTopbar = doc.querySelector('.topbar .text-dark-50.font-weight-bolder.d-none.d-md-inline.mr-3');
+    const nameFromProfileCard = doc.querySelector('#kt_profile_aside .card-title.font-weight-bolder');
+    
+    let studentName = "";
+    if (nameFromProfileCard && nameFromProfileCard.textContent.trim()) {
+        studentName = nameFromProfileCard.textContent.trim();
+    } else if (nameFromTopbar && nameFromTopbar.textContent.trim()) {
+        studentName = nameFromTopbar.textContent.trim().replace(/\s\s+/g, ' ');
+    }
+
+    const studentNumberEl = doc.querySelector('#kt_profile_aside .font-weight-bold.text-dark-50.font-size-sm.pb-6');
+    const studentNumber = studentNumberEl ? studentNumberEl.textContent.trim() : 'N/A';
+
+    const profileImageEl = doc.querySelector('#kt_profile_aside .symbol-label img');
+    // Fotoğraf URL'si tam değilse (örn: /Fotograf/xyz) başına HOST_URL ekle
+    let profileImageUrl = profileImageEl ? profileImageEl.getAttribute('src') : 'images/icon48.png';
+    if (profileImageUrl && profileImageUrl.startsWith('/')) {
+        profileImageUrl = new URL(profileImageUrl, STUDENT_PROFILE_URL).href;
+    }
+
+
+    const departmentLines = doc.querySelectorAll('#kt_profile_aside .pt-1 .d-flex.align-items-center.pb-1 .text-dark-65.font-weight-bold');
+    let department = "";
+    if (departmentLines.length >= 2) {
+        if (departmentLines.length >=3 && departmentLines[2].textContent.includes("PR.")) {
+           department = departmentLines[2].textContent.trim();
+        } else if (departmentLines.length >=2) {
+           department = departmentLines[1].textContent.trim();
+        }
+   }
+
+    return {
+        name: studentName || 'N/A',
+        number: studentNumber,
+        department: department || 'N/A',
+        imageUrl: profileImageUrl || 'images/icon48.png'
+    };
+}
+
+function extractGNOFromDOM(doc) {
+    if (!doc) return 'N/A';
+
+    const allTables = doc.querySelectorAll('.card-body table.table-condensed');
+    let gno = 'N/A';
+
+    if (allTables.length > 0) {
+        const lastTable = allTables[allTables.length - 1];
+        const tfootRows = lastTable.querySelectorAll('tfoot tr');
+        if (tfootRows.length > 0) {
+            const generalAverageRow = Array.from(tfootRows).find(row => {
+                const firstCell = row.querySelector('td:first-child');
+                return firstCell && firstCell.textContent.trim().startsWith('Genel:');
+            });
+            if (generalAverageRow) {
+                const gnoCell = generalAverageRow.querySelector('td:last-child');
+                if (gnoCell) gno = gnoCell.textContent.trim();
+            }
+        }
+    }
+    return gno;
+}
+
+async function updateStudentData() {
+    console.log("Öğrenci verileri güncelleniyor (offscreen ile)...");
+    let profileData = null;
+    let gnoData = 'N/A';
+
+    // Profil bilgileri
+    profileData = await fetchAndParseViaOffscreen(STUDENT_PROFILE_URL, "parseHtmlForProfile");
+    if (profileData && (profileData.name !== 'N/A' || profileData.number !== 'N/A')) {
+        await chrome.storage.local.set({ studentProfile: profileData });
+        console.log("Profil bilgileri güncellendi:", profileData);
+    } else {
+        console.warn("Profil bilgileri alınamadı veya boş (offscreen).");
+        const oldProfile = await chrome.storage.local.get('studentProfile');
+        if (!oldProfile.studentProfile || !oldProfile.studentProfile.name || oldProfile.studentProfile.name === 'N/A') {
+            // Geçerli veri yoksa N/A olarak kalsın veya yeni bir N/A objesi set edilsin
+            await chrome.storage.local.set({ studentProfile: { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/icon48.png'} });
+        } else if (profileData && profileData.name === 'N/A' && profileData.number === 'N/A') {
+            await chrome.storage.local.set({ studentProfile: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/icon48.png'} });
+        }
+    }
+
+    // GNO bilgisi
+    gnoData = await fetchAndParseViaOffscreen(TRANSCRIPT_URL, "parseHtmlForGNO");
+    if (gnoData && gnoData !== 'N/A') {
+        await chrome.storage.local.set({ studentGNO: gnoData });
+        console.log("GNO güncellendi:", gnoData);
+    } else {
+        console.warn("GNO bilgisi transkriptten alınamadı (offscreen).");
+        // Eski GNO'yu silme veya N/A bırak
+        const oldGno = await chrome.storage.local.get('studentGNO');
+        if (!oldGno.studentGNO || oldGno.studentGNO === 'N/A'){
+            await chrome.storage.local.set({ studentGNO: 'N/A' });
+        }
+    }
+    
+    return { profile: profileData, gno: gnoData };
+}
+
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "refreshDataInContentScript") {
         chrome.tabs.query({ url: "*://*.sakarya.edu.tr/*" }, (tabs) => {
@@ -20,6 +196,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({ status: "refresh_triggered" }); // Popup'a yanıt
         return true; // Asenkron yanıt için
     }
+    if (request.action === "fetchStudentData") {
+        updateStudentData().then(data => {
+            sendResponse({ status: "completed", data: data });
+        }).catch(error => {
+            console.error("updateStudentData hata:", error);
+            sendResponse({ status: "error", message: error.toString() });
+        });
+        return true; // Asenkron yanıt için
+    }
+    if (message.action === "calculateGrades") calculateGrades();
+  else if (message.action === "removeCalculatedGrades") removeCalculatedGrades();
 });
 function calculateGrades() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
