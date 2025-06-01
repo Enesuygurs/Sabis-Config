@@ -9,18 +9,18 @@
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f4f6f8; /* Açık gri arka plan */
-    color: #333; /* Koyu gri metin */
-    width: 280px; /* Biraz daha geniş */
+    background-color: #f4f6f8;
+    color: #333;
+    width: 300px; /* Biraz daha genişlettim öğrenci kartı için */
     padding: 0;
     line-height: 1.6;
 }
 
 .container {
-    padding: 20px;
+    padding: 15px; /* Genel padding biraz azaltıldı */
     display: flex;
     flex-direction: column;
-    gap: 20px; /* Öğeler arası boşluk */
+    gap: 15px; /* Öğeler arası boşluk */
 }
 
 /* Header */
@@ -28,26 +28,105 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 15px;
+    /* border-bottom: 1px solid #e0e0e0; Artık karttan sonra çizgi olacak */
+    padding-bottom: 0; /* Header altındaki boşluk azaltıldı */
 }
 
 .logo {
-    width: 32px; /* Logonun boyutu */
+    width: 32px;
     height: 32px;
 }
 
 .header h1 {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50; /* Koyu mavi-gri başlık */
+    color: #2c3e50;
 }
+
+/* YENİ: Öğrenci Bilgi Kartı Stilleri */
+.student-info-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background-color: #ffffff; /* Beyaz arka plan */
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Hafif gölge */
+    margin-bottom: 5px; /* Buton grubundan önce küçük bir boşluk */
+    position: relative; /* Yenileme butonu için */
+}
+
+.student-photo {
+    width: 60px; /* Fotoğraf boyutu */
+    height: 60px;
+    border-radius: 50%; /* Yuvarlak fotoğraf */
+    object-fit: cover; /* Fotoğrafın orantılı sığması */
+    border: 2px solid #e0e0e0;
+}
+
+.student-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px; /* Detaylar arası dikey boşluk */
+}
+
+.student-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+}
+
+.student-details .student-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+.student-details .student-department {
+    font-size: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* Uzun bölüm adları için */
+}
+
+.student-details .student-gno {
+    font-weight: 500;
+    color: #8B0000; /* Vurgu rengi */
+}
+
+.btn-refresh {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #8B0000;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-refresh:hover {
+    background-color: rgba(139, 0, 0, 0.1);
+}
+.btn-refresh svg {
+    width: 14px;
+    height: 14px;
+}
+
 
 /* Buton Grubu */
 .button-group {
     display: grid;
-    grid-template-columns: 1fr; /* Tek sütunlu düzen */
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 8px; /* Butonlar arası boşluk azaltıldı */
+    padding-top: 10px; /* Karttan sonra biraz boşluk */
+    border-top: 1px solid #e9ecef;
 }
 
 .btn {
@@ -55,11 +134,11 @@ body {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px 15px;
-    font-size: 14px;
+    padding: 9px 12px; /* Buton padding biraz ayarlandı */
+    font-size: 13px; /* Buton font boyutu */
     font-weight: 500;
     border: none;
-    border-radius: 6px; /* Yumuşak köşeler */
+    border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.2s ease-in-out, transform 0.1s ease;
     text-align: center;
@@ -73,7 +152,7 @@ body {
 }
 
 .btn-primary {
-    background-color: #8B0000; /* SAÜ Kırmızısı veya koyu kırmızı */
+    background-color: #8B0000;
     color: white;
 }
 .btn-primary:hover {
@@ -81,8 +160,8 @@ body {
 }
 
 .btn-secondary {
-    background-color: #e9ecef; /* Açık gri buton */
-    color: #343a40; /* Koyu gri metin */
+    background-color: #e9ecef;
+    color: #343a40;
     border: 1px solid #ced4da;
 }
 .btn-secondary:hover {
@@ -90,7 +169,7 @@ body {
 }
 
 .btn svg {
-    margin-right: 5px; /* İkon ve metin arası boşluk */
+    margin-right: 5px;
 }
 
 
@@ -98,16 +177,16 @@ body {
 .toggle-section {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px; /* Toggle'lar arası boşluk azaltıldı */
     padding-top: 10px;
-    border-top: 1px solid #e0e0e0; /* Butonlardan ayıran çizgi */
+    border-top: 1px solid #e9ecef;
 }
 
 .toggle-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 0; /* Dikey dolgu */
+    padding: 6px 0; /* Toggle item padding ayarlandı */
 }
 
 .toggle-label {
@@ -116,13 +195,13 @@ body {
     color: #495057;
 }
 
-/* Switch Stilleri (Öncekiyle benzer ama renkler güncellendi) */
+/* Switch Stilleri (Aynı kalabilir veya renkleri ayarlanabilir) */
 .switch {
-    font-size: 17px; /* Slider boyutunu etkiler */
+    font-size: 17px;
     position: relative;
     display: inline-block;
-    width: 3em; /* Genişlik */
-    height: 1.5em; /* Yükseklik */
+    width: 3em;
+    height: 1.5em;
 }
 
 .switch input {
@@ -138,18 +217,18 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc; /* Kapalıyken arka plan */
+    background-color: #ccc;
     border: 1px solid #bbb;
     transition: .4s;
-    border-radius: 30px; /* Yuvarlak kenarlar */
+    border-radius: 30px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 1.1em;
+    height: 1.2em;
     width: 1.2em;
-    left: 0.1em;
+    left: 0.15em;
     bottom: 0.15em;
     background-color: white;
     transition: .4s;
@@ -157,7 +236,7 @@ body {
 }
 
 input:checked + .slider {
-    background-color: #8B0000; /* Aktifken koyu kırmızı */
+    background-color: #8B0000;
     border-color: #7a0000;
 }
 
@@ -166,15 +245,15 @@ input:focus + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(1.5em); /* Topun kayma mesafesi */
+    transform: translateX(1.5em);
 }
 
 /* Footer */
 .footer {
     text-align: center;
     font-size: 11px;
-    color: #868e96; /* Soluk gri */
+    color: #868e96;
     padding-top: 15px;
     border-top: 1px solid #e0e0e0;
-    margin-top: auto; /* En alta yapışmasını sağlar */
+    margin-top: auto;
 }

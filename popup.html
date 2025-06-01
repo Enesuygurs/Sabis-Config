@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SAÜ Config</title>
     <link rel="stylesheet" href="style.css" />
-    <!-- Google Fonts (Opsiyonel - Modern bir font için) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,6 +15,23 @@
             <img src="images/icon48.png" alt="SAÜ Config Logo" class="logo">
             <h1>SAÜ Config</h1>
         </header>
+
+        <!-- YENİ: Öğrenci Bilgi Kartı -->
+        <div class="student-info-card" id="studentInfoCard">
+            <img src="images/icon48.png" alt="Öğrenci Fotoğrafı" class="student-photo" id="studentPhoto">
+            <div class="student-details">
+                <p class="student-name" id="studentName">Yükleniyor...</p>
+                <p class="student-department" id="studentDepartment">Yükleniyor...</p>
+                <p class="student-id" id="studentNumber">Öğrenci No: Yükleniyor...</p>
+                <p class="student-gno" id="studentGNO">GNO: Yükleniyor...</p>
+            </div>
+            <button id="refreshStudentInfo" class="btn-refresh" title="Bilgileri Yenile">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                    <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                </svg>
+            </button>
+        </div>
 
         <div class="button-group">
             <button id="changeGrades" class="btn btn-primary">
