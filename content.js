@@ -20,7 +20,147 @@ chrome.storage.local.get(["redmode_state", "darkmode_state", "stealth_state", "c
     }
   }
 });
+function scrapeAndStoreStudentInfo() {
+    // Bu fonksiyon, öğrenci bilgilerinin bulunduğu ana sayfa veya profil sayfasında çalışacak şekilde hedeflenmeli.
+    // Verdiğin ana sayfa HTML'ine göre seçicileri ayarlayalım.
 
+    // Ad Soyad (Topbar'dan ve profil kartından alınabilir)
+    const nameFromTopbar = document.querySelector('.topbar .text-dark-50.font-weight-bolder.d-none.d-md-inline.mr-3');
+    const nameFromProfileCard = document.querySelector('#kt_profile_aside .card-title.font-weight-bolder');
+    
+    let studentName = "";
+    if (nameFromProfileCard && nameFromProfileCard.textContent.trim()) {
+        studentName = nameFromProfileCard.textContent.trim();
+    } else if (nameFromTopbar && nameFromTopbar.textContent.trim()) {
+        studentName = nameFromTopbar.textContent.trim().replace(/\s\s+/g, ' '); // Birden fazla boşluğu tek boşluğa çevir
+    }
+
+    // Öğrenci Numarası
+    const studentNumberEl = document.querySelector('#kt_profile_aside .font-weight-bold.text-dark-50.font-size-sm.pb-6');
+    const studentNumber = studentNumberEl ? studentNumberEl.textContent.trim() : 'N/A';
+
+    // Fotoğraf URL'si
+    const profileImageEl = document.querySelector('#kt_profile_aside .symbol-label img');
+    const profileImageUrl = profileImageEl ? profileImageEl.src : 'images/icon48.png'; // Varsayılan bir resim
+
+    // Bölüm Bilgisi (Birden fazla satır olabilir, birleştirelim)
+    const departmentLines = document.querySelectorAll('#kt_profile_aside .pt-1 .d-flex.align-items-center.pb-1 .text-dark-65.font-weight-bold');
+    let department = "";
+    if (departmentLines.length >= 2) { // Fakülte ve Bölüm genellikle ilk iki satır
+        department = Array.from(departmentLines).slice(1, 3).map(el => el.textContent.trim()).join(' - ');
+         // Örnek: BİLGİSAYAR VE BİLİŞİM BİLİMLERİ FAKÜLTESİ - BİLGİSAYAR MÜHENDİSLİĞİ BÖLÜMÜ
+         // Daha spesifik olarak sadece program adını almak için:
+         if (departmentLines.length >=3 && departmentLines[2].textContent.includes("PR.")) {
+            department = departmentLines[2].textContent.trim();
+         } else if (departmentLines.length >=2) {
+            department = departmentLines[1].textContent.trim(); // Sadece bölümü al
+         }
+    }
+
+
+    if (studentName || studentNumber !== 'N/A' || department) {
+        chrome.storage.local.set({
+            studentProfile: {
+                name: studentName || 'N/A',
+                number: studentNumber,
+                department: department || 'N/A',
+                imageUrl: profileImageUrl
+            }
+        }, function() {
+            if (chrome.runtime.lastError) {
+                console.error("Öğrenci bilgileri kaydedilirken hata:", chrome.runtime.lastError.message);
+            } else {
+                console.log("Öğrenci bilgileri kaydedildi.");
+            }
+        });
+    }
+}
+
+function scrapeAndStoreGNO() {
+    // Bu fonksiyon Transkript sayfasında çalışacak şekilde hedeflenmeli.
+    // GNO'nun bulunduğu tablo yapısını inceleyerek doğru seçiciyi bulmalıyız.
+    // Transkript HTML'ine göre:
+    // Her dönemin sonunda bir "Genel" satırı var. En sonuncusu genel GNO'yu verir.
+    const allTables = document.querySelectorAll('.card-body table.table-condensed');
+    let gno = 'N/A';
+
+    if (allTables.length > 0) {
+        const lastTable = allTables[allTables.length - 1]; // Son dönem tablosu veya genel bir özet tablosu olabilir.
+                                                            // Transkript yapısına göre en sondaki genel ortalamayı içeren tabloyu hedeflemeliyiz.
+                                                            // Verdiğin örnekte her dönem sonunda bir 'Genel' ortalama var. En sonuncusunu alacağız.
+        const tfootRows = lastTable.querySelectorAll('tfoot tr');
+        if (tfootRows.length > 0) {
+            // "Genel:" etiketli satırı bul
+            const generalAverageRow = Array.from(tfootRows).find(row => {
+                const firstCell = row.querySelector('td:first-child');
+                return firstCell && firstCell.textContent.trim().startsWith('Genel:');
+            });
+
+            if (generalAverageRow) {
+                const gnoCell = generalAverageRow.querySelector('td:last-child'); // En son hücre ortalamayı içerir
+                if (gnoCell) {
+                    gno = gnoCell.textContent.trim();
+                }
+            }
+        }
+    }
+
+
+    if (gno !== 'N/A') {
+        chrome.storage.local.set({ studentGNO: gno }, function() {
+            if (chrome.runtime.lastError) {
+                console.error("GNO kaydedilirken hata:", chrome.runtime.lastError.message);
+            } else {
+                console.log("GNO kaydedildi:", gno);
+            }
+        });
+    }
+}
+
+// content.js sonuna
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "scrapeData") {
+        // Hangi sayfada olduğuna bağlı olarak ilgili scrape fonksiyonunu çağır
+        if (document.querySelector('#kt_profile_aside') || window.location.pathname === '/' || window.location.pathname === '/Home/Index') {
+            scrapeAndStoreStudentInfo();
+        }
+        if (window.location.href.includes("/Transkript")) {
+            scrapeAndStoreGNO();
+        }
+        sendResponse({ status: "done" });
+    }
+    return true; // Asenkron yanıt için
+});
+// Sayfa yüklendiğinde çalışacak ana mantık
+chrome.storage.local.get(["redmode_state", "darkmode_state", "stealth_state", "calculate_state"], function (data) {
+    if (data.redmode_state) enableRedTheme();
+    if (data.darkmode_state) enableDarkTheme();
+    if (data.stealth_state) enableStealthMode();
+
+    const currentUrl = window.location.href;
+
+    if (currentUrl.includes("sabis.sakarya.edu.tr")) { // Genel SABİS kontrolü
+        // Ana sayfa veya profil benzeri bir sayfada mıyız? (URL'ye göre daha spesifik olabilir)
+        // Verdiğin HTML'de ana sayfa URL'si / idi.
+        if (document.querySelector('#kt_profile_aside') || window.location.pathname === '/' || window.location.pathname === '/Home/Index') {
+            scrapeAndStoreStudentInfo();
+        }
+
+        // Transkript sayfasında mıyız?
+        if (currentUrl.includes("/Transkript")) {
+            scrapeAndStoreGNO();
+        }
+
+        // Notlar sayfasında mıyız?
+        if (currentUrl.includes("/Ders")) {
+            if (data.calculate_state) {
+                enableCalculateGrade();
+            } else {
+                initGradeClickHandlers();
+            }
+        }
+    }
+});
 function enableRedTheme() {
   if (!document.getElementById("redmode")) {
     let style = document.createElement("style");

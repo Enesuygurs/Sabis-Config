@@ -2,7 +2,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "calculateGrades") calculateGrades();
   else if (message.action === "removeCalculatedGrades") removeCalculatedGrades();
 });
-
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "refreshDataInContentScript") {
+        chrome.tabs.query({ url: "*://*.sakarya.edu.tr/*" }, (tabs) => {
+            tabs.forEach(tab => {
+                if (tab.id && tab.url && tab.url.includes("sabis.sakarya.edu.tr")) {
+                    chrome.tabs.sendMessage(tab.id, { action: "scrapeData" }, response => {
+                        if (chrome.runtime.lastError) {
+                            // console.warn("Content script'e mesaj gönderilemedi (belki o sekmede aktif değil):", chrome.runtime.lastError.message);
+                        } else if (response && response.status === "done") {
+                            // console.log("Veri content script tarafından çekildi:", tab.url);
+                        }
+                    });
+                }
+            });
+        });
+        sendResponse({ status: "refresh_triggered" }); // Popup'a yanıt
+        return true; // Asenkron yanıt için
+    }
+});
 function calculateGrades() {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     const currentTab = tabs[0];
