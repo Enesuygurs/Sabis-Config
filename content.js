@@ -139,27 +139,15 @@ chrome.storage.local.get(["redmode_state", "darkmode_state", "stealth_state", "c
 
     const currentUrl = window.location.href;
 
-    if (currentUrl.includes("sabis.sakarya.edu.tr")) { // Genel SABİS kontrolü
-        // Ana sayfa veya profil benzeri bir sayfada mıyız? (URL'ye göre daha spesifik olabilir)
-        // Verdiğin HTML'de ana sayfa URL'si / idi.
-        if (document.querySelector('#kt_profile_aside') || window.location.pathname === '/' || window.location.pathname === '/Home/Index') {
-            scrapeAndStoreStudentInfo();
-        }
-
-        // Transkript sayfasında mıyız?
-        if (currentUrl.includes("/Transkript")) {
-            scrapeAndStoreGNO();
-        }
-
-        // Notlar sayfasında mıyız?
-        if (currentUrl.includes("/Ders")) {
-            if (data.calculate_state) {
-                enableCalculateGrade();
-            } else {
-                initGradeClickHandlers();
-            }
+    // Notlar sayfasında mıyız?
+    if (currentUrl.includes("/Ders")) {
+        if (data.calculate_state) {
+            enableCalculateGrade(); // Bu, initGradeClickHandlers'ı da çağıracak
+        } else {
+            initGradeClickHandlers(); // Sadece tıklama ve "-" gösterme
         }
     }
+    // Ana sayfa veya transkript için veri çekme mantığı buradan kaldırıldı, background.js yapacak.
 });
 function enableRedTheme() {
   if (!document.getElementById("redmode")) {
