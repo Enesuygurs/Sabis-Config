@@ -924,156 +924,240 @@ function getPrimaryTextContent(element) {
     });
     return text.trim();
 }
+let gradeCalculationDoneForDynamicContent = {}; // Dinamik yüklenen içerik için hesaplama yapıldığını takip et
+
+function runGradeLogic() {
+    chrome.storage.local.get(["calculate_state"], function (data) {
+        const currentUrl = window.location.href;
+        if (!currentUrl.startsWith("https://obs.sabis.sakarya.edu.tr/Ders")) return;
+
+        // Dinamik yüklenen içerik için (ders detay sayfası notları)
+        const contentDivId = "icerik"; // Notların yüklendiği ana div'in ID'si
+        const dynamicContentKey = currentUrl + '#' + contentDivId; // Her sayfa ve div için benzersiz anahtar
+
+        if (data.calculate_state) {
+            enableCalculateGrade();
+            gradeCalculationDoneForDynamicContent[dynamicContentKey] = true; // Hesaplama yapıldı olarak işaretle
+        } else {
+            initGradeClickHandlers();
+            // Calculate kapalıyken bile, "-" yazma ve tıklanabilirlik eklendiği için işaretleyebiliriz.
+            gradeCalculationDoneForDynamicContent[dynamicContentKey] = true;
+        }
+    });
+}
 
 function enableCalculateGrade() {
-  const targetUrl = "https://obs.sabis.sakarya.edu.tr/Ders";
-  if (!window.location.href.startsWith(targetUrl)) return;
-  const cardBodies = document.querySelectorAll(".card-body");
+    const currentUrl = window.location.href;
+    if (!currentUrl.startsWith("https://obs.sabis.sakarya.edu.tr/Ders")) return;
 
-  cardBodies.forEach((cardBody) => {
-    const rows = cardBody.querySelectorAll("tbody tr");
-    let toplamPuan = 0;
-    let butunlemeVar = false;
+    let tablesToProcess = [];
+    const urlPath = new URL(currentUrl).pathname;
+    const urlHash = new URL(currentUrl).hash;
 
-    rows.forEach((row) => {
-      const oranCell = row.querySelector("td:nth-child(1)");
-      const notCellSpan = row.querySelector("td:nth-child(3) > span:first-child");
-      const calismaTipiCell = row.querySelector("td:nth-child(2)");
+    // Ana /Ders sayfası veya yıl/dönemli /Ders sayfası
+    if (urlPath === "/Ders" || /^\/Ders\/\d{4}\/\d{1}$/.test(urlPath)) {
+        document.querySelectorAll(".card-body").forEach(cardBody => {
+            const table = cardBody.querySelector("table");
+            if (table) tablesToProcess.push(table);
+        });
+    } 
+    // Ders detay sayfası (/Ders/Grup/...) ve özellikle #Not sekmesi aktifse
+    else if (urlPath.startsWith("/Ders/Grup/")) {
+        // Eğer URL'de #Not varsa veya #Not sekmesi aktifse (veya genel olarak #icerik div'i varsa)
+        const mainContentDiv = document.querySelector("#icerik");
+        if (mainContentDiv) {
+            // Notların bulunduğu tabloyu daha spesifik olarak hedefle
+            const table = mainContentDiv.querySelector("div.card > div.card-body > table.table");
+            if (table) {
+                tablesToProcess.push(table);
+            }
+        }
+    }
 
-      if (!oranCell || !notCellSpan || !calismaTipiCell) return;
+    if (tablesToProcess.length === 0) {
+        // console.log("Hesaplanacak not tablosu bulunamadı.");
+        initGradeClickHandlers(); // Tablo olmasa bile tıklama işlevleri için
+        return;
+    }
 
-      const calismaTipi = calismaTipiCell.textContent.trim();
-      if (calismaTipi.includes("Bütünleme")) butunlemeVar = true;
+    tablesToProcess.forEach(table => {
+        const tbody = table.querySelector("tbody");
+        if (!tbody) return;
 
-      const oranText = oranCell.textContent.trim().replace(",", ".");
-      const notTextContent = getPrimaryTextContent(notCellSpan).split(" ")[0].replace(",", ".");
+        const rows = tbody.querySelectorAll("tr");
+        let toplamPuan = 0;
+        let butunlemeVar = false;
+        let anketSatiriVar = false;
 
-      const existingSubScoreSpan = notCellSpan.querySelector("span[data-calculated-score='sub']");
-      if (existingSubScoreSpan) existingSubScoreSpan.remove();
+        // Önceki "Ortalama" satırını veya "Başarı Notu" içindeki ortalamayı temizle
+        Array.from(rows).forEach(row => {
+            const labelCell = row.querySelector("td:nth-child(2)");
+            if (labelCell && labelCell.textContent.trim() === "Ortalama") {
+                row.remove();
+            }
+            const basariNotuCellSpan = row.querySelector("td:nth-child(3) span#notOrtalama[data-calculated-score='true']");
+            if (basariNotuCellSpan) {
+                basariNotuCellSpan.remove();
+            }
+             // Notların yanındaki alt hesaplamaları da temizle
+            const subScoreSpan = row.querySelector("td:nth-child(3) span[data-calculated-score='sub']");
+            if (subScoreSpan) {
+                subScoreSpan.remove();
+            }
+        });
+        // DOM güncellendiği için satırları tekrar alalım
+        const currentRows = tbody.querySelectorAll("tr");
 
-      if (!isNaN(parseFloat(oranText)) && notTextContent !== "" && notTextContent !== "-" && !isNaN(parseFloat(notTextContent)) && parseFloat(notTextContent) >= 0) {
-        const oran = parseFloat(oranText);
-        const not = parseFloat(notTextContent);
-        const hesaplananPuan = (oran * not) / 100;
-        toplamPuan += hesaplananPuan;
 
-        const sonucElementi = document.createElement("span");
-        sonucElementi.style.color = "rgb(52, 52, 52)";
-        sonucElementi.style.fontSize = "0.9em";
-        sonucElementi.textContent = ` (${formatGradeNumber(hesaplananPuan)})`;
-        sonucElementi.setAttribute("data-calculated-score", "sub");
-        notCellSpan.appendChild(sonucElementi);
-      }
-    });
+        currentRows.forEach((row) => {
+            const oranCell = row.querySelector("td:nth-child(1)");
+            const notCellParentTd = row.querySelector("td:nth-child(4)") || row.querySelector("td:nth-child(3)"); // Ders detayda 4. hücre, genel Ders sayfasında 3. hücre
+            const notCellSpan = notCellParentTd ? notCellParentTd.querySelector("span:first-child") : null;
+            const calismaTipiCell = row.querySelector("td:nth-child(2)");
 
-    if (butunlemeVar) {
-      rows.forEach((row) => {
-        const calismaTipiCell = row.querySelector("td:nth-child(2)");
-        if (calismaTipiCell && calismaTipiCell.textContent.includes("Final")) {
-          const oranCell = row.querySelector("td:nth-child(1)");
-          const notCellSpan = row.querySelector("td:nth-child(3) > span:first-child");
+            if (!oranCell || !notCellSpan || !calismaTipiCell) return;
 
-          if (oranCell && notCellSpan) {
+            const calismaTipi = calismaTipiCell.textContent.trim();
+            if (calismaTipi.includes("Bütünleme")) butunlemeVar = true;
+            if (calismaTipi.includes("Anket") || (notCellParentTd && notCellParentTd.textContent.includes("Anket"))) anketSatiriVar = true;
+
+
             const oranText = oranCell.textContent.trim().replace(",", ".");
+            // Not hücresindeki ana metni al (yanındaki hesaplanmış puanı alma)
             const notTextContent = getPrimaryTextContent(notCellSpan).split(" ")[0].replace(",", ".");
 
-            if (!isNaN(parseFloat(oranText)) && notTextContent !== "" && notTextContent.toLowerCase() !== "not" && !isNaN(parseFloat(notTextContent)) && parseFloat(notTextContent) >= 0) {
-              const oran = parseFloat(oranText);
-              const not = parseFloat(notTextContent);
-              const hesaplananPuan = (oran * not) / 100;
-              toplamPuan -= hesaplananPuan;
+
+            // Alt hesaplamayı temizle (varsa)
+            const existingSubScoreSpan = notCellSpan.querySelector("span[data-calculated-score='sub']");
+            if (existingSubScoreSpan) existingSubScoreSpan.remove();
+
+
+            if (!isNaN(parseFloat(oranText)) && parseFloat(oranText) > 0 && // Oranı 0 olanlar (örn: İSG) hesaplamaya katılmasın
+                notTextContent !== "" && notTextContent !== "-" &&
+                !isNaN(parseFloat(notTextContent)) && parseFloat(notTextContent) >= 0) {
+                const oran = parseFloat(oranText);
+                const not = parseFloat(notTextContent);
+                const hesaplananPuan = (oran * not) / 100;
+                toplamPuan += hesaplananPuan;
+
+                const sonucElementi = document.createElement("span");
+                sonucElementi.style.color = "rgb(52, 52, 52)";
+                sonucElementi.style.fontSize = "0.9em";
+                sonucElementi.textContent = ` (${formatGradeNumber(hesaplananPuan)})`;
+                sonucElementi.setAttribute("data-calculated-score", "sub");
+                notCellSpan.appendChild(sonucElementi);
             }
-          }
+        });
+
+        if (butunlemeVar) {
+            currentRows.forEach((row) => {
+                const calismaTipiCell = row.querySelector("td:nth-child(2)");
+                if (calismaTipiCell && calismaTipiCell.textContent.includes("Final")) {
+                    const oranCell = row.querySelector("td:nth-child(1)");
+                    const notCellParentTd = row.querySelector("td:nth-child(4)") || row.querySelector("td:nth-child(3)");
+                    const notCellSpan = notCellParentTd ? notCellParentTd.querySelector("span:first-child") : null;
+
+                    if (oranCell && notCellSpan) {
+                        const oranText = oranCell.textContent.trim().replace(",", ".");
+                        const notTextContent = getPrimaryTextContent(notCellSpan).split(" ")[0].replace(",", ".");
+                        if (!isNaN(parseFloat(oranText)) && notTextContent !== "" && notTextContent !== "-" && !isNaN(parseFloat(notTextContent)) && parseFloat(notTextContent) >= 0) {
+                            const oran = parseFloat(oranText);
+                            const not = parseFloat(notTextContent);
+                            const hesaplananPuan = (oran * not) / 100;
+                            toplamPuan -= hesaplananPuan;
+                        }
+                    }
+                }
+            });
         }
-      });
-    }
 
-    const formattedTotal = formatGradeNumber(toplamPuan);
-    const basariNotuRow = Array.from(rows).find((row) => row.querySelector("td:nth-child(2)")?.textContent.includes("Başarı Notu"));
+        const formattedTotal = formatGradeNumber(toplamPuan);
+        // Başarı Notu satırını bul (sadece /Ders sayfasında relevant olabilir)
+        const basariNotuRow = Array.from(currentRows).find((row) => {
+            const cell = row.querySelector("td:nth-child(2)");
+            return cell && cell.textContent.includes("Başarı Notu");
+        });
 
-    const existingOrtalamaRows = cardBody.querySelectorAll("tr");
-    Array.from(existingOrtalamaRows).forEach(row => {
-        const labelCell = row.querySelector("td:nth-child(2)");
-        if (labelCell && labelCell.textContent.trim() === "Ortalama") {
-            row.remove();
+
+         if (basariNotuRow) {
+             /* ... başarı notu içine ortalama ekleme ... */
+            const basariNotuCellSpan = basariNotuRow.querySelector("td:nth-child(3) span:first-child");
+            if (basariNotuCellSpan) {
+                const harfNotuText = getPrimaryTextContent(basariNotuCellSpan);
+                const harfNotuMatch = harfNotuText.match(/^[A-ZÇĞİÖŞÜ]{1,2}(?![a-z])/);
+                const harfNotu = harfNotuMatch ? harfNotuMatch[0] : "";
+
+                const renkler = { FF: "#df1212", FD: "#df1212", DD: "blue", DC: "blue", DZ: "orange", GR: "orange" };
+                basariNotuCellSpan.style.color = renkler[harfNotu] || "green";
+
+                const toplamPuanElementi = document.createElement("span");
+                toplamPuanElementi.style.color = "#000";
+                toplamPuanElementi.textContent = ` (${formattedTotal})`;
+                toplamPuanElementi.setAttribute("data-calculated-score", "true");
+                toplamPuanElementi.setAttribute("id", "notOrtalama");
+                basariNotuCellSpan.appendChild(toplamPuanElementi);
+            }
+        }  else {
+             /* ... yeni ortalama satırı ekleme ... */
+            const newAverageRow = document.createElement("tr");
+            const isDetailPage = table.closest("#icerik") !== null;
+            
+            newAverageRow.innerHTML = `
+                <td></td>
+                <td class="font-weight-bold">Ortalama</td>
+                ${isDetailPage ? '<td></td>' : ''}
+                <td class="text-right font-weight-bold">
+                    <span id="notOrtalama" data-calculated-score="true" style="color: #000">${formattedTotal}</span>
+                </td>
+            `;
+            let referenceNode = null;
+            const knownLastRowTexts = ["Anket", "Bütünleme Başvurusu", "İş Sağlığı ve Güvenliği", "Devam Durumu"];
+             for (const rowText of knownLastRowTexts) {
+                const potentialRefRow = Array.from(tbody.querySelectorAll("tr")).find(r => {
+                    const cellTwo = r.querySelector("td:nth-child(2)");
+                    const cellThree = r.querySelector("td:nth-child(3)") || r.querySelector("td:nth-child(4)");
+                    return (cellTwo && cellTwo.textContent.includes(rowText)) ||
+                           (cellThree && cellThree.textContent.includes(rowText));
+                });
+                if (potentialRefRow) {
+                    referenceNode = potentialRefRow;
+                    break;
+                }
+            }
+            if (referenceNode) {
+                tbody.insertBefore(newAverageRow, referenceNode);
+            } else {
+                tbody.appendChild(newAverageRow);
+            }
         }
     });
-
-
-    if (basariNotuRow) {
-      const basariNotuCellSpan = basariNotuRow.querySelector("td:nth-child(3) span:first-child");
-      if (basariNotuCellSpan) {
-        const harfNotuText = getPrimaryTextContent(basariNotuCellSpan);
-        const harfNotuMatch = harfNotuText.match(/^[A-ZÇĞİÖŞÜ]{1,2}(?![a-z])/);
-        const harfNotu = harfNotuMatch ? harfNotuMatch[0] : "";
-
-        const renkler = { FF: "#df1212", FD: "#df1212", DD: "blue", DC: "blue", DZ: "orange", GR: "orange" };
-        basariNotuCellSpan.style.color = renkler[harfNotu] || "green";
-
-        const existingAvgSpan = basariNotuCellSpan.querySelector("#notOrtalama");
-        if (existingAvgSpan) existingAvgSpan.remove();
-
-        const toplamPuanElementi = document.createElement("span");
-        toplamPuanElementi.style.color = "#000";
-        toplamPuanElementi.textContent = ` (${formattedTotal})`;
-        toplamPuanElementi.setAttribute("data-calculated-score", "true");
-        toplamPuanElementi.setAttribute("id", "notOrtalama");
-        basariNotuCellSpan.appendChild(toplamPuanElementi);
-      }
-    } else {
-      const newAverageRow = document.createElement("tr");
-      newAverageRow.innerHTML = `
-        <td></td>
-        <td class="font-weight-bold">Ortalama</td>
-        <td class="text-right font-weight-bold">
-          <span id="notOrtalama" data-calculated-score="true" style="color: #000">${formattedTotal}</span>
-        </td>
-      `;
-      const tbody = cardBody.querySelector("tbody");
-      if (tbody) {
-        const lastKnownRowsText = ["Anket", "Devam Durumu", "Harf Notu Aralıkları"];
-        let referenceNode = null;
-        for (const rowText of lastKnownRowsText) {
-          const potentialRefRow = Array.from(tbody.querySelectorAll("tr")).find(r => {
-            const cellTwo = r.querySelector("td:nth-child(2)");
-            const cellThree = r.querySelector("td:nth-child(3)");
-            return (cellTwo && cellTwo.textContent.includes(rowText)) ||
-                   (cellThree && cellThree.textContent.includes(rowText));
-          });
-          if (potentialRefRow) {
-            referenceNode = potentialRefRow;
-            break;
-          }
-        }
-        if (referenceNode) {
-          tbody.insertBefore(newAverageRow, referenceNode);
-        } else {
-          tbody.appendChild(newAverageRow);
-        }
-      }
-    }
-  });
-  initGradeClickHandlers();
+    initGradeClickHandlers();
 }
 
 
 function initGradeClickHandlers() {
-  const targetUrl = "https://obs.sabis.sakarya.edu.tr/Ders";
-  if (!window.location.href.startsWith(targetUrl)) return;
+    // ... (Bu fonksiyonun içeriği de önceki cevaptaki gibi kalacak) ...
+    // Seçicisi zaten hem ana sayfayı hem de #icerik içini kapsıyordu.
+    // Filtreleme mantığı da aynı kalacak.
+    const currentUrl = window.location.href;
+    if (!currentUrl.startsWith("https://obs.sabis.sakarya.edu.tr/Ders")) return;
 
-  const notGirisSpanlari = Array.from(document.querySelectorAll(".card-body .text-right > span:first-child"))
-    .filter(span => {
-      const parentTd = span.closest("td");
-      if (!parentTd) return false;
-      const siblingTd = parentTd.previousElementSibling;
-      if (parentTd.classList.contains('font-weight-bold')) return false;
-      if (siblingTd && siblingTd.classList.contains('font-weight-bold') &&
-        (siblingTd.textContent.includes("Başarı Notu") || siblingTd.textContent.includes("Ortalama"))) return false;
-      return true;
-    });
+    const notGirisSpanlari = Array.from(document.querySelectorAll(".card-body .text-right > span:first-child, #icerik .card-body table.table td.text-right > span:first-child"))
+        .filter(span => { /* ... filtreleme mantığı ... */
+            const parentTd = span.closest("td");
+            if (!parentTd) return false;
+            const row = parentTd.closest("tr");
+            if (!row) return false;
+            const labelCellInRow = row.querySelector("td:nth-child(2)");
+            if (labelCellInRow && (labelCellInRow.textContent.includes("Başarı Notu") || labelCellInRow.textContent.includes("Ortalama"))) {
+                return false;
+            }
+            if (parentTd.classList.contains('font-weight-bold')) return false;
+            return true;
+        });
 
-  notGirisSpanlari.forEach((notElement) => {
-    const newElement = notElement.cloneNode(true); // Olayları temizlemek için
+  notGirisSpanlari.forEach((notElement) => { /* ... tıklama olayı ve "-" yazma mantığı ... */
+    const newElement = notElement.cloneNode(true);
     notElement.parentNode.replaceChild(newElement, notElement);
     notElement = newElement;
 
@@ -1082,44 +1166,47 @@ function initGradeClickHandlers() {
 
     if (currentGradeText === "" || (currentGradeText !== "-" && isNaN(parseFloat(currentGradeText.split(" ")[0])))) {
         if (currentGradeText !== "-") {
-            const textNode = document.createTextNode("-"); // "-" yaz
-            while (notElement.firstChild) notElement.removeChild(notElement.firstChild);
+            const textNode = document.createTextNode("-");
+            while (notElement.firstChild) { /* ... içerik temizleme ... */
+                if (notElement.firstChild.nodeType === Node.ELEMENT_NODE && notElement.firstChild.hasAttribute("data-calculated-score")) {
+                    notElement.removeChild(notElement.firstChild);
+                } else if (notElement.firstChild.nodeType === Node.TEXT_NODE) {
+                    notElement.removeChild(notElement.firstChild);
+                } else {
+                    break; 
+                }
+            }
             notElement.appendChild(textNode);
         }
-        notElement.style.color = ""; // Normal renk (gri yerine)
-        notElement.style.fontWeight = "bold"; // Kalın yap
-        notElement.style.fontStyle = ""; // İtalik olmasın
+        notElement.style.color = ""; 
+        notElement.style.fontWeight = "bold"; 
+        notElement.style.fontStyle = ""; 
     } else if (currentGradeText !== "-") {
       notElement.style.color = ""; 
-      notElement.style.fontWeight = ""; // Normal ağırlık
+      notElement.style.fontWeight = ""; 
       notElement.style.fontStyle = "";
     }
-
 
     notElement.addEventListener("click", function handleClick() {
       let promptDefaultValue = "";
       const originalTextForPrompt = getPrimaryTextContent(notElement).split(" ")[0];
 
-      // DEĞİŞİKLİK: "not" yerine "-" kontrolü
       if (originalTextForPrompt !== "-" && !isNaN(parseInt(originalTextForPrompt))) {
         promptDefaultValue = parseInt(originalTextForPrompt);
       }
-
       const yeniNotPrompt = prompt("Yeni notunuzu girin (0-100):", promptDefaultValue);
-
       if (yeniNotPrompt === null) return; 
 
       const existingSubScore = notElement.querySelector("span[data-calculated-score='sub']");
       if(existingSubScore) existingSubScore.remove();
 
       if (yeniNotPrompt.trim() === "") { 
-        // DEĞİŞİKLİK: Boş girilince "-" yaz ve stil ayarla
         const textNode = document.createTextNode("-");
         while (notElement.firstChild) notElement.removeChild(notElement.firstChild);
         notElement.appendChild(textNode);
-        notElement.style.color = ""; // Normal renk
-        notElement.style.fontWeight = "bold"; // Kalın
-        notElement.style.fontStyle = ""; // İtalik değil
+        notElement.style.color = ""; 
+        notElement.style.fontWeight = "bold"; 
+        notElement.style.fontStyle = ""; 
       } else {
         const notSayisi = parseInt(yeniNotPrompt);
         if (isNaN(notSayisi) || notSayisi < 0 || notSayisi > 100) {
@@ -1131,54 +1218,99 @@ function initGradeClickHandlers() {
         while (notElement.firstChild) notElement.removeChild(notElement.firstChild);
         notElement.appendChild(textNode);
         notElement.style.color = "";
-        notElement.style.fontWeight = ""; // Normal ağırlık
+        notElement.style.fontWeight = ""; 
         notElement.style.fontStyle = "";
       }
-
-      // ... (kalan tıklama işleyici kodu aynı: harf notu temizleme, ortalama temizleme, yeniden hesaplama) ...
-       const dersElementi = notElement.closest(".card-body");
-      if (dersElementi) {
-        const harfNotuElement = dersElementi.querySelector("td.text-right.font-weight-bold > span:first-child");
+      
+      const dersCardElementi = notElement.closest(".card-body:not(#icerik .card-body)");
+      if (dersCardElementi) { /* ... harf notu temizleme ... */
+        const harfNotuElement = dersCardElementi.querySelector("td.text-right.font-weight-bold > span:first-child");
         if (harfNotuElement) {
             const harfNotuTextContent = getPrimaryTextContent(harfNotuElement);
             const harfNotuMatch = harfNotuTextContent.match(/^[A-ZÇĞİÖŞÜ]{1,2}(?![a-z])/);
             if (harfNotuMatch) {
                 const textNodeVal = harfNotuTextContent.replace(harfNotuMatch[0], "").trim();
-                const textNode = document.createTextNode(textNodeVal === "" && harfNotuElement.querySelector("#notOrtalama") ? "" : textNodeVal); // Eğer sadece ortalama kalacaksa boş string
+                const textNode = document.createTextNode(textNodeVal === "" && harfNotuElement.querySelector("#notOrtalama") ? "" : textNodeVal); 
                 const avgSpan = harfNotuElement.querySelector("#notOrtalama"); 
                 while (harfNotuElement.firstChild) harfNotuElement.removeChild(harfNotuElement.firstChild);
-                if (textNode.textContent.trim() !== "" || !avgSpan) { // Eğer text node boş değilse veya avgSpan yoksa text node'u ekle
+                if (textNode.textContent.trim() !== "" || !avgSpan) { 
                     harfNotuElement.appendChild(textNode);
                 }
                 if(avgSpan) harfNotuElement.appendChild(avgSpan); 
             }
         }
       }
-
-      document.querySelectorAll(".card-body").forEach(cb => {
-        const existingOrtalamaRows = cb.querySelectorAll("tr");
-        Array.from(existingOrtalamaRows).forEach(row => {
-            const labelCell = row.querySelector("td:nth-child(2)");
-            if (labelCell && labelCell.textContent.trim() === "Ortalama") {
-                row.remove();
-            }
-        });
-        const existingAvgInSuccessNote = cb.querySelector("#notOrtalama");
-        if(existingAvgInSuccessNote) existingAvgInSuccessNote.remove();
-      });
-
+      
       chrome.storage.local.get(["calculate_state"], function (data) {
         if (data.calculate_state) {
           enableCalculateGrade();
-        } else {
-          initGradeClickHandlers();
         }
       });
     });
   });
 }
 
+// Sayfa yüklendiğinde veya dinamik içerik eklendiğinde çalışacak ana mantık
+function initializeOrUpdateGrades() {
+    const currentUrl = window.location.href;
+    if (currentUrl.startsWith("https://obs.sabis.sakarya.edu.tr/Ders")) {
+        runGradeLogic(); // runGradeLogic, storage'dan calculate_state'i okuyup ona göre işlem yapacak
+    }
+}
+initializeOrUpdateGrades();
 
+if (window.location.href.includes("/Ders/Grup/")) {
+    const targetNodeToObserve = document.getElementById('icerik');
+
+    if (targetNodeToObserve) {
+        const observerConfig = { childList: true, subtree: true }; // Alt ağaçtaki değişiklikleri ve çocuk ekleme/kaldırmayı dinle
+
+        const callback = function(mutationsList, observer) {
+            for(const mutation of mutationsList) {
+                if (mutation.type === 'childList') {
+                    // #icerik içine yeni bir tablo (veya notları içeren bir yapı) eklendi mi kontrol et
+                    let newTableFound = false;
+                    mutation.addedNodes.forEach(node => {
+                        // Eklenen düğümün kendisi veya çocukları arasında not tablosu var mı?
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            if (node.querySelector("table.table") || (node.classList && node.classList.contains("table"))) {
+                                newTableFound = true;
+                            }
+                        }
+                    });
+
+                    if (newTableFound) {
+                        console.log("Dinamik içerik (#icerik) güncellendi, notlar yeniden işleniyor.");
+                        // İşlemin tekrar tekrar yapılmasını önlemek için bir kontrol eklenebilir
+                        // veya observer geçici olarak durdurulup işlemden sonra tekrar başlatılabilir.
+                        // Şimdilik, her içerik değişiminde çalışsın.
+                        // Eğer enableCalculateGrade zaten yapıldıysa tekrar yapmamak için bir bayrak kullanılabilir.
+                        const dynamicContentKey = window.location.href + '#icerik';
+                        if (!gradeCalculationDoneForDynamicContent[dynamicContentKey] || /* bir şekilde resetlendiyse */ true) {
+                             // Kısa bir gecikme, DOM'un tam oturması için
+                            setTimeout(() => {
+                                runGradeLogic();
+                            }, 500); // 500ms gecikme, gerekirse ayarlanabilir
+                        }
+                        // break; // İlk uygun mutasyondan sonra döngüden çıkılabilir
+                    }
+                }
+            }
+        };
+
+        const observer = new MutationObserver(callback);
+        observer.observe(targetNodeToObserve, observerConfig);
+        console.log("#icerik div'i MutationObserver ile dinleniyor.");
+
+        // Sayfadan ayrılırken observer'ı durdurmak iyi bir pratiktir (opsiyonel)
+        // window.addEventListener('beforeunload', () => {
+        //     observer.disconnect();
+        //     console.log("MutationObserver durduruldu.");
+        // });
+    } else {
+        console.log("/Ders/Grup/ sayfasında #icerik div'i bulunamadı, MutationObserver kurulamadı.");
+    }
+}
 // Sayfa yüklendiğinde ilk çalıştırma
 window.addEventListener("load", function () {
     // Bu, sayfanın en başındaki chrome.storage.local.get içinde zaten ele alınıyor.
