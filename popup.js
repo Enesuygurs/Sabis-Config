@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
         STUDENT_PROFILE: "studentProfile",
         STUDENT_GNO: "studentGNO",
         STUDENT_BALANCE: "studentBalance",
-        FOOD_MENU: "foodMenu" // YENİ
+        FOOD_MENU: "foodMenu"
     };
 
     const ELEMENTS = {
@@ -17,21 +17,54 @@ document.addEventListener("DOMContentLoaded", function () {
         studentNumber: document.getElementById("studentNumber"),
         studentGNO: document.getElementById("studentGNO"),
         studentBalance: document.getElementById("studentBalance"),
+        foodMenuTitle: document.getElementById("foodMenuTitle"),
+        foodMenuList: document.getElementById("foodMenuList"),
+        
         refreshStudentInfoBtn: document.getElementById("refreshStudentInfo"),
         loadBalanceBtn: document.getElementById("loadBalanceBtn"),
+        
+        mainContent: document.getElementById("mainContent"),
+        settingsContent: document.getElementById("settingsContent"),
+        openSettingsBtn: document.getElementById("openSettingsBtn"),
+        
+        headerLogo: document.getElementById("headerLogo"),
+        headerTitle: document.getElementById("headerTitle"),
+        backToMainBtnHeader: document.getElementById("backToMainBtnHeader"),
+
         changeGradesBtn: document.getElementById("changeGrades"),
         autoFillSurveyBtn: document.getElementById("autoFillSurvey"),
         goToExamScheduleBtn: document.getElementById("goToExamSchedule"),
         checkQuestionsBtn: document.getElementById("checkQuestions"),
+        
         themeCheckbox: document.getElementById("themeCheckbox"),
         themeDarkCheckbox: document.getElementById("themeDarkCheckbox"),
         stealthCheckbox: document.getElementById("stealthCheckbox"),
-        calculateCheckbox: document.getElementById("calculateCheckbox"),
-        // YEMEK MENÜSÜ ELEMENTLERİ
-        foodMenuTitle: document.getElementById("foodMenuTitle"),
-        foodMenuList: document.getElementById("foodMenuList")
+        calculateCheckbox: document.getElementById("calculateCheckbox")
     };
+function $(id) { return document.getElementById(id); } // Basit bir yardımcı
+     // popup.js
 
+    function showMainContent() {
+        console.log("showMainContent çağrıldı");
+        if (ELEMENTS.mainContent) ELEMENTS.mainContent.classList.remove("hidden");
+        if (ELEMENTS.settingsContent) ELEMENTS.settingsContent.classList.add("hidden");
+
+        if (ELEMENTS.headerLogo) ELEMENTS.headerLogo.classList.remove("hidden");
+        if (ELEMENTS.headerTitle) ELEMENTS.headerTitle.textContent = "SABİS Config";
+        if (ELEMENTS.backToMainBtnHeader) ELEMENTS.backToMainBtnHeader.classList.add("hidden");
+        if (ELEMENTS.openSettingsBtn) ELEMENTS.openSettingsBtn.classList.remove("hidden");
+    }
+
+    function showSettingsContent() {
+        console.log("showSettingsContent çağrıldı");
+        if (ELEMENTS.mainContent) ELEMENTS.mainContent.classList.add("hidden");
+        if (ELEMENTS.settingsContent) ELEMENTS.settingsContent.classList.remove("hidden");
+
+        if (ELEMENTS.headerLogo) ELEMENTS.headerLogo.classList.add("hidden");
+        if (ELEMENTS.headerTitle) ELEMENTS.headerTitle.textContent = "Ayarlar & İşlemler";
+        if (ELEMENTS.backToMainBtnHeader) ELEMENTS.backToMainBtnHeader.classList.remove("hidden");
+        if (ELEMENTS.openSettingsBtn) ELEMENTS.openSettingsBtn.classList.add("hidden");
+    }
     function setTextContent(element, text, prefix = '') {
         if (element) element.textContent = text ? `${prefix}${text}` : (prefix ? `${prefix}N/A` : 'N/A');
     }
@@ -45,13 +78,18 @@ document.addEventListener("DOMContentLoaded", function () {
         setProfileField(ELEMENTS.studentDepartment, 'Yükleniyor...');
         setProfileField(ELEMENTS.studentNumber, 'Yükleniyor...');
         setTextContent(ELEMENTS.studentGNO, 'Yükleniyor...', 'GNO: ');
-        setTextContent(ELEMENTS.studentBalance, 'Yükleniyor...'); // Bakiye için prefix yoktu, eklenebilir: 'Bakiye: '
+        setTextContent(ELEMENTS.studentBalance, 'Yükleniyor...', 'Bakiye: ');
         if (ELEMENTS.studentPhoto) ELEMENTS.studentPhoto.src = 'images/avatar.png';
-        // Yemek menüsü yükleniyor durumu
         if (ELEMENTS.foodMenuTitle) setTextContent(ELEMENTS.foodMenuTitle, 'Bugünün Menüsü Yükleniyor...');
         if (ELEMENTS.foodMenuList) ELEMENTS.foodMenuList.innerHTML = '<li class="placeholder">Yükleniyor...</li>';
     }
 
+    if (ELEMENTS.openSettingsBtn) {
+        ELEMENTS.openSettingsBtn.addEventListener("click", showSettingsContent);
+    }
+    if (ELEMENTS.backToMainBtnHeader) {
+        ELEMENTS.backToMainBtnHeader.addEventListener("click", showMainContent);
+    }
       function updatePopupWithData(profile, gno, balance, foodMenu) { 
         console.log("Popup updatePopupWithData - foodMenu:", JSON.stringify(foodMenu, null, 2));// YENİ: foodMenu parametresi
         // ... (profil, gno, bakiye gösterme aynı) ...
@@ -320,6 +358,6 @@ document.addEventListener("DOMContentLoaded", function () {
     setupToggle("themeDarkCheckbox", STORAGE_KEYS.DARKMODE, "toggleDarkTheme");
     setupToggle("stealthCheckbox", STORAGE_KEYS.STEALTH, null, true);
     setupToggle("calculateCheckbox", STORAGE_KEYS.CALCULATE, null, false); // Artık false
-
+showMainContent();
     loadAndDisplayStudentInfo(); // DOMContentLoaded sonunda tekrar çağırarak son durumu al
 });
