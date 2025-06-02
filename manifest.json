@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "SAÜ Config",
+    "name": "SABİS Config",
     "version": "1.0",
-    "description": "SAÜ Config by Enes Uygur",
+    "description": "SABİS Config by Enes Uygur",
     "permissions": [
         "activeTab",
         "scripting",
