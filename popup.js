@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const themeDarkCheckbox = document.getElementById("themeDarkCheckbox");
     const themeCheckbox = document.getElementById("themeCheckbox");
     const checkQuestionsBtn = document.getElementById("checkQuestions");
+    const goToExamScheduleBtn = document.getElementById("goToExamSchedule");
     const autoFillSurveyBtn = document.getElementById("autoFillSurvey");
 
     const studentPhotoEl = document.getElementById("studentPhoto");
@@ -193,6 +194,23 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     },
                 });
+            });
+        });
+    }
+
+    if (goToExamScheduleBtn) {
+        goToExamScheduleBtn.addEventListener("click", () => {
+            const examScheduleUrl = "https://obs.sabis.sakarya.edu.tr/Sinav/Takvim";
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                const currentTab = tabs[0];
+                if (currentTab && currentTab.url && currentTab.url.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
+                    // Eğer zaten bir SABİS sekmesindeyse, o sekmeyi güncelle
+                    chrome.tabs.update(currentTab.id, { url: examScheduleUrl });
+                } else {
+                    // Değilse, yeni bir sekmede aç
+                    chrome.tabs.create({ url: examScheduleUrl });
+                }
+                window.close(); // Popup'ı kapat
             });
         });
     }
