@@ -78,7 +78,7 @@ function enableStealthMode() {
                 const bgImage = computedStyle.getPropertyValue("background-image");
                 const decodedSvg = decodeURIComponent(bgImage.substring(bgImage.indexOf(',') + 1, bgImage.length - 2));
                 if (decodedSvg.includes("<text")) {
-                    const updatedSvg = decodedSvg.replace(/<text[^>]*>.*?<\/text>/g, (match) => match.replace(/>(.*?)</, ">Stealth Mode ON<"));
+                    const updatedSvg = decodedSvg.replace(/<text[^>]*>.*?<\/text>/g, (match) => match.replace(/>(.*?)</, ">SABİS Config<"));
                     element.style.setProperty("background-image", `url("data:image/svg+xml,${encodeURIComponent(updatedSvg)}")`, "important");
                 }
             } catch (e) { /* no-op */ }
