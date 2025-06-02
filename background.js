@@ -1,54 +1,68 @@
 const STUDENT_PROFILE_URL = "https://obs.sabis.sakarya.edu.tr/";
 const TRANSCRIPT_URL = "https://obs.sabis.sakarya.edu.tr/Transkript";
+const CARD_BALANCE_URL = "https://obs.sabis.sakarya.edu.tr/Kart/Bakiye";
 const OFFSCREEN_DOCUMENT_PATH = 'offscreen.html';
+const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('offscreen.html');
 
 let creatingOffscreen; // Offscreen doküman oluşturma Promise'ını tutar
-async function setupOffscreenDocument() {
-    // Aktif offscreen dokümanı var mı kontrol et
-    const existingContexts = await chrome.runtime.getContexts({
-        contextTypes: ['OFFSCREEN_DOCUMENT'],
-        documentUrls: [chrome.runtime.getURL(OFFSCREEN_DOCUMENT_PATH)]
-    });
+async function hasOffscreenDocument() {
+    if (typeof chrome.runtime.getContexts === 'function') {
+        const existingContexts = await chrome.runtime.getContexts({
+            contextTypes: ['OFFSCREEN_DOCUMENT'],
+            documentUrls: [OFFSCREEN_DOCUMENT_URL]
+        });
+        return existingContexts.length > 0;
+    }
+    console.warn("chrome.runtime.getContexts API'si bulunamadı.");
+    return false; 
+}
 
-    if (existingContexts.length > 0) {
+async function setupOffscreenDocument() {
+    if (await hasOffscreenDocument()) {
         return;
     }
-
-    // Henüz oluşturulmuyorsa ve yoksa oluştur
     if (creatingOffscreen) {
         await creatingOffscreen;
     } else {
+        console.log("Offscreen dokümanı oluşturuluyor:", OFFSCREEN_DOCUMENT_URL);
         creatingOffscreen = chrome.offscreen.createDocument({
-            url: OFFSCREEN_DOCUMENT_PATH,
-            reasons: ['DOM_PARSER'],
-            justification: 'SABİS sayfalarından öğrenci bilgilerini ve GNO\'yu parse etmek.',
+            url: OFFSCREEN_DOCUMENT_URL,
+            reasons: [chrome.offscreen.Reason.DOM_PARSER],
+            justification: 'SABİS sayfalarından veri parse etmek.',
         });
-        await creatingOffscreen;
-        creatingOffscreen = null;
+        try {
+            await creatingOffscreen;
+        } catch (error) {
+            console.error("Offscreen dokümanı oluşturma hatası:", error);
+            if (error.message.includes("Only a single offscreen document may be created")) {
+                 console.warn("Zaten bir offscreen dokümanı mevcut olabilir.");
+            } else {
+                throw error;
+            }
+        } finally {
+            creatingOffscreen = null;
+        }
     }
 }
 async function fetchAndParseViaOffscreen(url, parseAction) {
-    await setupOffscreenDocument();
+    await setupOffscreenDocument(); // Her zaman önce setup'ı çağır
     try {
         const response = await fetch(url, { credentials: 'include' });
         if (!response.ok) {
             console.error(`Sayfa alınamadı ${url}: ${response.status} ${response.statusText}`);
-            return parseAction === "parseHtmlForGNO" ? 'N/A' : null;
+            if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
+            return null;
         }
         const htmlText = await response.text();
-
         const result = await chrome.runtime.sendMessage({
             action: parseAction,
-            htmlContent: htmlText,
-            target: 'offscreen' // Offscreen dokümanına hedefleme (bu aslında gerekmeyebilir, sendMessage tüm context'lere gider)
+            htmlContent: htmlText
         });
-        // await closeOffscreenDocument(); // İsteğe bağlı: her işlemden sonra kapat
         return result;
-
     } catch (error) {
         console.error(`Sayfa çekme/offscreen parse etme hatası ${url}:`, error);
-        // await closeOffscreenDocument(); // Hata durumunda da kapat
-        return parseAction === "parseHtmlForGNO" ? 'N/A' : null;
+        if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
+        return null;
     }
 }
 async function closeOffscreenDocument() {
@@ -144,39 +158,78 @@ async function updateStudentData() {
     console.log("Öğrenci verileri güncelleniyor (offscreen ile)...");
     let profileData = null;
     let gnoData = 'N/A';
+    let balanceData = 'N/A'; // YENİ
 
     // Profil bilgileri
-    profileData = await fetchAndParseViaOffscreen(STUDENT_PROFILE_URL, "parseHtmlForProfile");
-    if (profileData && (profileData.name !== 'N/A' || profileData.number !== 'N/A')) {
-        await chrome.storage.local.set({ studentProfile: profileData });
-        console.log("Profil bilgileri güncellendi:", profileData);
-    } else {
-        console.warn("Profil bilgileri alınamadı veya boş (offscreen).");
-        const oldProfile = await chrome.storage.local.get('studentProfile');
-        if (!oldProfile.studentProfile || !oldProfile.studentProfile.name || oldProfile.studentProfile.name === 'N/A') {
-            // Geçerli veri yoksa N/A olarak kalsın veya yeni bir N/A objesi set edilsin
-            await chrome.storage.local.set({ studentProfile: { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/icon48.png'} });
-        } else if (profileData && profileData.name === 'N/A' && profileData.number === 'N/A') {
-            await chrome.storage.local.set({ studentProfile: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/icon48.png'} });
+    try {
+        profileData = await fetchAndParseViaOffscreen(STUDENT_PROFILE_URL, "parseHtmlForProfile");
+        if (profileData && (profileData.name !== 'N/A' || profileData.number !== 'N/A')) {
+            await chrome.storage.local.set({ studentProfile: profileData });
+            console.log("Profil bilgileri güncellendi:", profileData);
+        } else {
+            console.warn("Profil bilgileri alınamadı veya boş (offscreen).");
+            const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
+            if (!oldProfile || !oldProfile.name || oldProfile.name === 'N/A') {
+                await chrome.storage.local.set({ studentProfile: { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/icon48.png'} });
+            } else if (profileData && profileData.name === 'N/A' && profileData.number === 'N/A') {
+                await chrome.storage.local.set({ studentProfile: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/icon48.png'} });
+            }
         }
+    } catch (e) {
+        console.error("Profil verisi işlenirken hata:", e);
+        profileData = { name: "Hata", number: "Hata", department: "Hata", imageUrl: 'images/icon48.png' }; // Hata durumunda varsayılan
     }
 
     // GNO bilgisi
-    gnoData = await fetchAndParseViaOffscreen(TRANSCRIPT_URL, "parseHtmlForGNO");
-    if (gnoData && gnoData !== 'N/A') {
-        await chrome.storage.local.set({ studentGNO: gnoData });
-        console.log("GNO güncellendi:", gnoData);
-    } else {
-        console.warn("GNO bilgisi transkriptten alınamadı (offscreen).");
-        // Eski GNO'yu silme veya N/A bırak
-        const oldGno = await chrome.storage.local.get('studentGNO');
-        if (!oldGno.studentGNO || oldGno.studentGNO === 'N/A'){
-            await chrome.storage.local.set({ studentGNO: 'N/A' });
+    try {
+        gnoData = await fetchAndParseViaOffscreen(TRANSCRIPT_URL, "parseHtmlForGNO");
+        if (gnoData && gnoData !== 'N/A') {
+            await chrome.storage.local.set({ studentGNO: gnoData });
+            console.log("GNO güncellendi:", gnoData);
+        } else {
+            console.warn("GNO bilgisi transkriptten alınamadı (offscreen).");
+            const { studentGNO: oldGno } = await chrome.storage.local.get('studentGNO');
+            if (!oldGno || oldGno === 'N/A'){
+                await chrome.storage.local.set({ studentGNO: 'N/A' });
+            }
         }
+    } catch (e) {
+        console.error("GNO verisi işlenirken hata:", e);
+        gnoData = 'N/A';
+    }
+
+    // Kart Bakiye Bilgisi (YENİ)
+    try {
+        balanceData = await fetchAndParseViaOffscreen(CARD_BALANCE_URL, "parseHtmlForBalance");
+        if (balanceData && balanceData !== 'N/A') {
+            await chrome.storage.local.set({ studentBalance: balanceData });
+            console.log("Kart bakiyesi güncellendi:", balanceData);
+        } else {
+            console.warn("Kart bakiyesi alınamadı (offscreen).");
+             const { studentBalance: oldBalance } = await chrome.storage.local.get('studentBalance');
+            if (!oldBalance || oldBalance === 'N/A'){
+                await chrome.storage.local.set({ studentBalance: 'N/A' });
+            }
+        }
+    } catch (e) {
+        console.error("Bakiye verisi işlenirken hata:", e);
+        balanceData = 'N/A';
     }
     
-    return { profile: profileData, gno: gnoData };
+    return { profile: profileData, gno: gnoData, balance: balanceData }; // YENİ: balance eklendi
 }
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "fetchStudentData") {
+        updateStudentData().then(data => {
+            sendResponse({ status: "completed", data: data });
+        }).catch(error => {
+            console.error("updateStudentData ana hata yakalayıcı:", error);
+            sendResponse({ status: "error", message: error.toString() });
+        });
+        return true;
+    }
+});
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "refreshDataInContentScript") {

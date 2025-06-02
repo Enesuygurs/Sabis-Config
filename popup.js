@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Depolama anahtarları artık background'da yönetiliyor ama popup'ta okuma için kullanılabilir.
     const STORAGE_KEY_STUDENT_PROFILE = "studentProfile";
     const STORAGE_KEY_STUDENT_GNO = "studentGNO";
+    const STORAGE_KEY_STUDENT_BALANCE = "studentBalance"; // YENİ
+
 
 
     const changeGradesBtn = document.getElementById("changeGrades");
@@ -16,26 +18,40 @@ document.addEventListener("DOMContentLoaded", function () {
     const checkQuestionsBtn = document.getElementById("checkQuestions");
     const goToExamScheduleBtn = document.getElementById("goToExamSchedule");
     const autoFillSurveyBtn = document.getElementById("autoFillSurvey");
-
+const studentBalanceEl = document.getElementById("studentBalance"); // YENİ
     const studentPhotoEl = document.getElementById("studentPhoto");
     const studentNameEl = document.getElementById("studentName");
     const studentDepartmentEl = document.getElementById("studentDepartment");
     const studentNumberEl = document.getElementById("studentNumber");
     const studentGNOEl = document.getElementById("studentGNO");
     const refreshStudentInfoBtn = document.getElementById("refreshStudentInfo");
+const loadBalanceBtn = document.getElementById("loadBalanceBtn"); // YENİ
 
     function displayLoadingState() {
         studentNameEl.textContent = 'Yükleniyor...';
         studentDepartmentEl.textContent = 'Yükleniyor...';
         studentNumberEl.textContent = 'Yükleniyor...';
         studentGNOEl.textContent = 'GNO: Yükleniyor...';
+       if (studentBalanceEl) studentBalanceEl.textContent = 'Yükleniyor...';
         studentPhotoEl.src = 'images/icon48.png';
     }
 
-    function updatePopupWithData(profile, gno) {
+    function updatePopupWithData(profile, gno, balance) {
         if (profile) {
             studentNameEl.textContent = profile.name || 'N/A';
-            studentDepartmentEl.textContent = profile.department || 'N/A';
+             // BÖLÜM BİLGİSİ İŞLEME (YENİ BASİT MANTIK)
+            let departmentText = profile.department || 'N/A';
+            if (departmentText !== 'N/A') {
+                const prIndex = departmentText.indexOf('PR'); // Büyük/küçük harf duyarlı "PR"
+                // const prIndex = departmentText.toUpperCase().indexOf('PR'); // Büyük/küçük harf duyarsız için
+                
+                if (prIndex !== -1) { // Eğer "PR" bulunduysa
+                    departmentText = departmentText.substring(0, prIndex).trim();
+                }
+                // Eğer "PR" yoksa, departmentText olduğu gibi kalır.
+            }
+            studentDepartmentEl.textContent = departmentText;
+
             studentNumberEl.textContent = profile.number || 'N/A';
             if (profile.imageUrl && profile.imageUrl !== 'images/icon48.png') {
                 studentPhotoEl.src = profile.imageUrl;
@@ -46,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
             studentNameEl.textContent = 'Bilgi Yok';
             studentDepartmentEl.textContent = 'Veri çekilemedi';
-            studentNumberEl.textContent = '-'; 
+            studentNumberEl.textContent = '-';
             studentPhotoEl.src = 'images/icon48.png';
         }
 
@@ -54,92 +70,117 @@ document.addEventListener("DOMContentLoaded", function () {
             studentGNOEl.textContent = `GNO: ${gno}`;
         } else if (profile && profile.name === "Giriş Yapılmamış") {
              studentGNOEl.textContent = 'GNO: -';
-        }
-        else {
+        } else {
             studentGNOEl.textContent = 'GNO: N/A';
+        }
+
+        if (studentBalanceEl) { // Elementin varlığını kontrol et
+            if (balance && balance !== 'N/A') {
+                studentBalanceEl.textContent = `${balance}`;
+            } else if (profile && profile.name === "Giriş Yapılmamış") {
+                studentBalanceEl.textContent = '-';
+            } else {
+                studentBalanceEl.textContent = 'N/A';
+            }
         }
     }
 
-    function loadAndDisplayStudentInfo() {
+     function loadAndDisplayStudentInfo() {
         displayLoadingState();
-        // Önce storage'dan okumayı dene (hızlı yükleme için)
-        chrome.storage.local.get([STORAGE_KEY_STUDENT_PROFILE, STORAGE_KEY_STUDENT_GNO], function (storedData) {
+        chrome.storage.local.get([STORAGE_KEY_STUDENT_PROFILE, STORAGE_KEY_STUDENT_GNO, STORAGE_KEY_STUDENT_BALANCE], function (storedData) {
             if (chrome.runtime.lastError) {
                 console.error("Depodan ilk okuma hatası:", chrome.runtime.lastError.message);
             }
-            if (storedData.studentProfile || storedData.studentGNO) {
-                console.log("Depodan önbelleklenmiş veri yüklendi.");
-                updatePopupWithData(storedData.studentProfile, storedData.studentGNO);
-            }
-            // Her durumda veriyi arka planda tazelemeyi iste (veya sadece refresh butonuna basınca)
-            // Şimdilik popup her açıldığında tazeleme isteği gönderelim
-            // Daha iyi bir strateji: Belirli aralıklarla veya sadece refresh ile
+            // Veri varsa ilk başta göster
+            updatePopupWithData(storedData.studentProfile, storedData.studentGNO, storedData.studentBalance);
+            
             console.log("Arka plandan taze veri isteniyor...");
             chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
                 if (chrome.runtime.lastError) {
                     console.error("Veri çekme mesajı gönderilemedi:", chrome.runtime.lastError.message);
-                    // Hata durumunda, eğer önbellek varsa o gösterilir, yoksa "Hata" mesajı kalır.
-                    if (!storedData.studentProfile && !storedData.studentGNO) {
-                        updatePopupWithData(null, null); // Hata durumunu göster
+                    // Hata durumunda önbelleklenmiş veri (varsa) kalır, yoksa "Yükleniyor..." veya hata mesajı kalır.
+                    // Eğer hiç veri yoksa ve hata oluştuysa, bunu kullanıcıya bildirebiliriz.
+                    if (!storedData.studentProfile && !storedData.studentGNO && !storedData.studentBalance) {
+                        updatePopupWithData(
+                            {name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, 
+                            "Hata", 
+                            "Hata"
+                        );
                     }
                     return;
                 }
                 if (response && response.status === "completed" && response.data) {
                     console.log("Arka plandan taze veri alındı:", response.data);
-                    updatePopupWithData(response.data.profile, response.data.gno);
+                    updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                 } else if (response && response.status === "error") {
                     console.error("Arka plan veri çekme hatası:", response.message);
-                     if (!storedData.studentProfile && !storedData.studentGNO) { // Sadece hiç önbellek yoksa hata göster
-                        studentNameEl.textContent = "Veri Alınamadı";
-                        studentDepartmentEl.textContent = "";
-                        studentNumberEl.textContent = "";
-                        studentGNOEl.textContent = "";
+                     if (!storedData.studentProfile && !storedData.studentGNO && !storedData.studentBalance) { 
+                        updatePopupWithData(
+                            {name: "Veri Alınamadı", department:"-", number:"-", imageUrl: 'images/icon48.png'}, 
+                            "N/A", 
+                            "N/A"
+                        );
                     }
                 } else {
-                     // Beklenmedik yanıt veya veri yok
                      console.warn("Arka plandan beklenen veri gelmedi.", response);
-                     if (!storedData.studentProfile && !storedData.studentGNO && !(response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış")) {
-                        // Eğer önbellek yoksa ve gelen veri de "Giriş Yapılmamış" değilse, bir sorun var demektir.
-                        updatePopupWithData(null, null);
+                     if (!storedData.studentProfile && !storedData.studentGNO && !storedData.studentBalance && !(response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış")) {
+                        updatePopupWithData(null, null, null);
                     } else if (response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış"){
-                        updatePopupWithData(response.data.profile, response.data.gno);
+                        updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                     }
                 }
             });
         });
     }
 
-    // Popup açıldığında öğrenci bilgilerini yükle ve tazelemeye çalış
     loadAndDisplayStudentInfo();
 
-    if(refreshStudentInfoBtn) {
+     if(refreshStudentInfoBtn) {
         refreshStudentInfoBtn.addEventListener("click", () => {
-            displayLoadingState(); // "Yükleniyor..." göster
+            displayLoadingState(); 
             chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
                 if (chrome.runtime.lastError) {
                     console.error("Yenileme mesajı gönderilemedi:", chrome.runtime.lastError.message);
-                    updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, null);
+                    updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, "Hata", "Hata");
                     return;
                 }
                 if (response && response.status === "completed" && response.data) {
-                    updatePopupWithData(response.data.profile, response.data.gno);
+                    updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                 } else if (response && response.status === "error") {
                     console.error("Yenileme sırasında arka plan hatası:", response.message);
-                    studentNameEl.textContent = "Yenilenemedi";
-                    studentNumberEl.textContent = "-";
+                    updatePopupWithData({name: "Yenilenemedi", department:"-", number:"-", imageUrl: 'images/icon48.png'}, "-", "-");
                 } else {
                     console.warn("Yenileme sırasında beklenen veri gelmedi.", response);
                      if (response && response.data && response.data.profile && response.data.profile.name === "Giriş Yapılmamış"){
-                        updatePopupWithData(response.data.profile, response.data.gno);
+                        updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                     } else {
-                        updatePopupWithData({name: "Veri Yok", department:"Veri Yok", number:"-", imageUrl: 'images/icon48.png'}, null);
+                        updatePopupWithData({name: "Veri Yok", department:"Veri Yok", number:"-", imageUrl: 'images/icon48.png'}, "N/A", "N/A");
                     }
                 }
             });
         });
     }
 
-    // ... (Diğer buton ve toggle event listener'ları aynı kalacak, yukarıdaki popup.js'den alabilirsin) ...
+     // YENİ: Bakiye Yükle Butonu İşlevi
+    if (loadBalanceBtn) {
+        loadBalanceBtn.addEventListener("click", () => {
+            const cardBalancePageUrl = "https://obs.sabis.sakarya.edu.tr/Kart/Bakiye";
+
+            // Aktif sekme zaten Kart Bakiye sayfasıysa onu kullan, değilse yeni sekmede aç.
+            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+                const currentTab = tabs[0];
+                if (currentTab && currentTab.id && currentTab.url && currentTab.url.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
+                    // Eğer mevcut sekme bir SABİS sekmesiyse, o sekmeyi güncelle
+                    chrome.tabs.update(currentTab.id, { url: cardBalancePageUrl });
+                } else {
+                    // Değilse veya aktif sekme yoksa, yeni bir sekmede aç
+                    chrome.tabs.create({ url: cardBalancePageUrl });
+                }
+                window.close(); // Popup'ı kapat
+            });
+        });
+    }
+
     // Change Grades
     if (changeGradesBtn) {
         changeGradesBtn.addEventListener("click", () => {
@@ -304,6 +345,9 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (removeFunction && !isChecked) {
                             removeFunction(tab.id);
                         } else {
+                            if (checkboxId === "calculateCheckbox" && !tab.url.includes("/Ders")) {
+                                return; // /Ders sayfasında değilse reload etme
+                            }
                             chrome.tabs.reload(tab.id);
                         }
                     }
