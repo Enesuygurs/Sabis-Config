@@ -69,7 +69,7 @@ function enableStealthMode() {
             el.innerText = selectorsAndText[selector];
         });
     }
-    document.querySelectorAll(".card-body .pb-5 .pt-1, .navi-spacer-x-0")
+    document.querySelectorAll(".card-body .pb-5 .pt-1")
         .forEach(el => el.style.display = "none");
     document.querySelectorAll("*").forEach(element => {
         const computedStyle = window.getComputedStyle(element);
