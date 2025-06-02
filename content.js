@@ -1,3 +1,5 @@
+// content.js
+
 const THEME_LINK_ID_PREFIX = "sauconfig-theme-";
 const STORAGE_KEYS = {
     REDMODE: "redmode_state",
@@ -24,6 +26,8 @@ function manageTheme(themeName, cssFileName, enable) {
     }
 }
 
+// ... (enableStealthMode, formatGradeNumber, getPrimaryTextContent, processGradeTable, 
+//      enableCalculateGrade, initGradeClickHandlers fonksiyonları bir önceki yanıttaki gibi aynı kalacak) ...
 function applyStealthStyles(element, styles, textContent) {
     Object.entries(styles).forEach(([prop, value]) => element.style.setProperty(prop, value, "important"));
     if (textContent) element.innerText = textContent;
@@ -275,7 +279,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
         if (changes[STORAGE_KEYS.REDMODE] !== undefined) manageTheme("red", "red-theme.css", changes[STORAGE_KEYS.REDMODE].newValue);
         if (changes[STORAGE_KEYS.DARKMODE] !== undefined) manageTheme("dark", "dark-theme.css", changes[STORAGE_KEYS.DARKMODE].newValue);
-        if (changes[STORAGE_KEYS.STEALTH] !== undefined) { /* Handled by page reload from popup.js */ }
+        if (changes[STORAGE_KEYS.STEALTH] !== undefined) {
+            // Stealth modu için sayfa yenilemesi popup.js'den yönetiliyor.
+            // Eğer anında değişiklik isteniyorsa, enableStealthMode veya tersi çağrılabilir.
+            // Ancak DOM manipülasyonunu geri almak zor olabileceğinden,
+            // popup.js'in sayfayı yenilemesi daha temiz bir çözüm olabilir.
+            // Eğer popup.js yenilemiyorsa ve anında değişiklik isteniyorsa:
+            // changes[STORAGE_KEYS.STEALTH].newValue ? enableStealthMode() : window.location.reload();
+        }
         if (changes[STORAGE_KEYS.CALCULATE] !== undefined) runOrClearGradeLogic(changes[STORAGE_KEYS.CALCULATE].newValue);
     }
 });
@@ -299,4 +310,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse({status: "ok_recalculated"});
         return true;
     }
+    // YENİ: Popup'tan gelen tema toggle mesajlarını dinle
+    else if (request.action === "toggleRedTheme") {
+        manageTheme("red", "red-theme.css", request.state);
+        sendResponse({status: "red_theme_toggled"});
+    }
+    else if (request.action === "toggleDarkTheme") {
+        manageTheme("dark", "dark-theme.css", request.state);
+        sendResponse({status: "dark_theme_toggled"});
+    }
+    return true; // Diğer mesajlar için de true döndürmek iyi bir pratik olabilir.
 });
