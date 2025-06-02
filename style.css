@@ -1,373 +1,225 @@
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-html {
-    scrollbar-width: none;
-}
+/* style.css */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scrollbar-width: none; } /* Firefox için scrollbar gizleme */
+body::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera için scrollbar gizleme */
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f6f8;
     color: #333;
-    width: 300px;
-    padding: 0;
+    width: 300px; /* Sabit genişlik */
     line-height: 1.6;
+    /* min-height: 420px; Bu satırı geçici olarak kaldıralım, içerik belirlesin */
 }
+
 .container {
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px; 
 }
+
 .header {
     display: flex;
     align-items: center;
+    justify-content: space-between; 
     gap: 10px;
     border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
+    width: 100%;
 }
-.logo {
-    width: 32px;
-    height: 32px;
-}
-.header h1 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-.student-info-card {
+
+.header-main { 
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px; 
+    flex-grow: 1; 
+}
+
+.logo { width: 24px; height: 24px; flex-shrink: 0; }
+.btn-back-header { /* Başlıktaki geri butonu */
+    /* Stil ve ikon JS ile yönetilecek, burada sadece boyut */
+    width: 24px; /* Logo ile aynı boyutta olabilir */
+    height: 24px;
+    padding: 0 !important; /* btn-icon padding'ini ezer */
+}
+
+
+h1#headerTitle { 
+    font-size: 16px; 
+    font-weight: 600;
+    color: #2c3e50;
+    flex-grow: 1; 
+    margin: 0; 
+    line-height: 1.3; 
+}
+
+.btn-icon {
+    background: none; border: none; color: #5f6368; 
+    cursor: pointer; padding: 4px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    flex-shrink: 0; 
+}
+.btn-icon:hover { background-color: #f0f0f0; color: #202124; }
+.btn-settings svg, .btn-back-header svg { width: 18px; height: 18px; } /* İkon boyutunu eşitledim */
+
+
+/* ----- İÇERİK BÖLÜMLERİ ----- */
+.content-section {
+    display: flex; /* Başlangıçta flex olsun, JS ile hidden class'ı eklenecek */
+    flex-direction: column;
+    gap: 12px; 
+    width: 100%; 
+}
+
+.hidden {
+    display: none !important; /* En önemli kural */
+}
+
+/* Kart stilleri (student-info, balance, food-menu) */
+.student-info-card, .balance-card, .food-menu-card {
     background-color: #ffffff;
     padding: 12px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
+
+/* Öğrenci Bilgi Kartı Stilleri - YENİDEN DÜZENLENDİ */
+.student-info-card {
+    display: flex; /* Fotoğraf ve detayları yan yana getirmek için */
+    align-items: center; /* Dikeyde ortala */
+    gap: 12px; /* Fotoğraf ve detaylar arası boşluk */
+}
+
 .student-photo {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid #ddd;
-    flex-shrink: 0;
+    flex-shrink: 0; /* Boyutu sabit kalsın, küçülmesin */
 }
+
 .student-details {
-    flex-grow: 1;
+    flex-grow: 1; /* Kalan alanı kaplasın */
     display: flex;
-    flex-direction: column;
-    gap: 0px;
-    min-width: 0;
+    flex-direction: column; /* Bilgiler alt alta sıralansın */
+    gap: 0px; /* Bilgiler arası dikey boşluk (gerekirse artırılabilir) */
+    min-width: 0; /* flex item'ın taşmasını engellemek için */
 }
+
 .student-details p {
     margin: 0;
     font-size: 12px;
     color: #555;
-    line-height: 1.5;
+    line-height: 1.4; /* Satır yüksekliği biraz azaltıldı */
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; /* Uzun metinler için ... */
 }
+
 .student-details .student-name {
     font-size: 14px;
     font-weight: 600;
     color: #2c3e50;
 }
+
 .student-details .student-department {
     font-size: 10px;
     color: #777;
 }
+
 .student-details .student-id {
     font-size: 11px;
 }
-.student-details .student-gno {
+
+.student-details .student-gno { /* GNO için özel stil */
     font-weight: 500;
-    color: #8B0000;
+    color: #8B0000; /* Vurgu rengi */
     font-size: 12px;
 }
+
+/* Öğrenci Kartı Aksiyonları (Yenileme Butonu) */
 .student-actions {
-    margin-left: auto;
-    align-self: flex-start;
+    margin-left: auto; /* Detaylardan sonra en sağa iter */
+    align-self: flex-start; /* Dikeyde üste hizala */
 }
-.balance-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 10px 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+
+.btn-refresh { 
+    background: none; border: none; color: #6c757d; 
+    cursor: pointer; padding: 3px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; /* İkonu ortala */
 }
-.balance-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.balance-icon {
-    color: #28a745;
-    flex-shrink: 0;
-}
-.balance-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-.btn-balance-load {
-    background-color: #28a745;
-    color: white;
-    border: none;
-}
-.btn-balance-load:hover {
-    background-color: #218838;
-}
-.btn-small {
-    padding: 6px 10px !important;
-    font-size: 12px !important;
-    gap: 6px !important;
-}
-.btn-small svg {
-    width: 13px !important;
-    height: 13px !important;
-    margin-right: 4px !important;
-}
-.btn-refresh {
-    background: none;
-    border: none;
-    color: #6c757d;
-    cursor: pointer;
-    padding: 3px;
-    border-radius: 50%;
-    display: flex;
-}
-.btn-refresh:hover {
-    color: #343a40;
-    background-color: rgba(0, 0, 0, 0.05);
-}
-.btn-refresh svg {
-    width: 14px;
-    height: 14px;
-}
-.button-group {
-    display: grid;
+.btn-refresh:hover { color: #343a40; background-color: rgba(0,0,0,0.05); }
+.btn-refresh svg { width: 14px; height: 14px; }
+
+.balance-card { display: flex; justify-content: space-between; align-items: center; }
+.balance-info { display: flex; align-items: center; gap: 8px; }
+.balance-icon { color: #28a745; flex-shrink: 0; }
+.balance-text { font-size: 14px; font-weight: 600; color: #333; margin: 0; }
+.btn-balance-load { background-color: #28a745; color: white; border: none; }
+.btn-balance-load:hover { background-color: #218838; }
+.btn-small { padding: 6px 10px !important; font-size: 12px !important; gap: 6px !important; }
+.btn-small svg { width: 13px !important; height: 13px !important; margin-right: 4px !important; }
+
+
+.food-menu-card { display: flex; flex-direction: column; gap: 8px; }
+.food-menu-header { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 5px; }
+.food-menu-icon { color: #fd7e14; flex-shrink: 0; }
+.food-menu-title { font-size: 15px; font-weight: 600; color: #333; margin: 0; }
+.food-menu-list { list-style: none; padding-left: 5px; margin: 0; font-size: 13px; color: #555; max-height: 100px; overflow-y: auto; }
+.food-menu-list li { padding: 3px 0; border-bottom: 1px dashed #eee; }
+.food-menu-list li:last-child { border-bottom: none; }
+.food-menu-list .food-calorie { font-size: 0.8em; color: #888; margin-left: 5px; }
+.food-menu-list .placeholder { color: #999; font-style: italic; }
+.food-menu-link { font-size: 11px; color: #007bff; text-decoration: none; align-self: flex-end; margin-top: 5px; }
+.food-menu-link:hover { text-decoration: underline; }
+
+
+/* Ayarlar Bölümü İçeriği (settingsContent içindeki) */
+#settingsContent .button-group {
+    display: grid; /* Bu zaten vardı, kalsın */
     grid-template-columns: 1fr;
     gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid #e9ecef;
+    /* padding-top: 10px; // content-section'dan geliyor artık */
+    /* border-top: 1px solid #e9ecef; // content-section'dan geliyor artık */
 }
-.btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-    text-align: center;
-}
-.btn:hover {
-    opacity: 0.9;
-}
-.btn:active {
-    transform: translateY(1px);
-}
-.btn-primary {
-    background-color: #8B0000;
-    color: white;
-}
-.btn-primary:hover {
-    background-color: #a50000;
-}
-.btn-secondary {
-    background-color: #e9ecef;
-    color: #343a40;
-    border: 1px solid #ced4da;
-}
-.btn-secondary:hover {
-    background-color: #d3d9df;
-}
-.btn svg {
-    margin-right: 5px;
-}
-.toggle-section {
-    display: flex;
+#settingsContent .toggle-section {
+    display: flex; /* Bu zaten vardı */
     flex-direction: column;
     gap: 8px;
-    padding-top: 10px;
+    padding-top: 10px; /* Butonlardan sonra ayırıcı */
     border-top: 1px solid #e9ecef;
 }
-.toggle-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2px 0;
-}
-.toggle-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: #495057;
-}
-.switch {
-    font-size: 17px;
-    position: relative;
-    display: inline-block;
-    width: 3em;
-    height: 1.5em;
-}
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    border: 1px solid #bbb;
-    transition: .4s;
-    border-radius: 30px;
-}
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 1.1em;
-    width: 1.2em;
-    left: 0.1em;
-    bottom: 0.15em;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-input:checked + .slider {
-    background-color: #8B0000;
-    border-color: #7a0000;
-}
-input:focus + .slider {
-    box-shadow: 0 0 1px #8B0000;
-}
-input:checked + .slider:before {
-    transform: translateX(1.5em);
-}
+/* ... (btn, btn-primary, btn-secondary, toggle-item, switch, slider stilleri aynı) ... */
+.btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 12px; font-size: 13px; font-weight: 500; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s ease-in-out, transform 0.1s ease; text-align: center; }
+.btn:hover { opacity: 0.9; }
+.btn:active { transform: translateY(1px); }
+.btn-primary { background-color: #8B0000; color: white; }
+.btn-primary:hover { background-color: #a50000; }
+.btn-secondary { background-color: #e9ecef; color: #343a40; border: 1px solid #ced4da; }
+.btn-secondary:hover { background-color: #d3d9df; }
+.btn svg { margin-right: 5px; }
+
+.toggle-item { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+.toggle-label { font-size: 14px; font-weight: 500; color: #495057; }
+.switch { font-size: 17px; position: relative; display: inline-block; width: 3em; height: 1.5em; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border: 1px solid #bbb; transition: .4s; border-radius: 30px; }
+.slider:before { position: absolute; content: ""; height: 1.1em; width: 1.2em; left: 0.1em; bottom: 0.15em; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: #8B0000; border-color: #7a0000; }
+input:focus + .slider { box-shadow: 0 0 1px #8B0000; }
+input:checked + .slider:before { transform: translateX(1.5em); }
+
+
 .footer {
     text-align: center;
     font-size: 11px;
     color: #868e96;
-    padding-top: 15px;
+        padding: 8px 0 0 0;
     border-top: 1px solid #e0e0e0;
-    margin-top: auto;
+    margin-top: auto; 
+    width: 100%; 
 }
-
-
-/* ... (önceki stiller aynı kalacak) ... */
-
-/* Bakiye Kartı Stilleri */
-.balance-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #ffffff;
-    padding: 10px 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-}
-.balance-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.balance-icon {
-    color: #17a2b8; /* Info mavisi veya başka bir renk */
-    flex-shrink: 0;
-}
-.balance-text {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-.btn-balance-load {
-    background-color: #28a745;
-    color: white;
-    border: none;
-}
-.btn-balance-load:hover {
-    background-color: #218838;
-}
-
-/* YENİ: Yemek Menüsü Kartı Stilleri */
-.food-menu-card {
-    background-color: #ffffff;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-.food-menu-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 8px;
-    margin-bottom: 5px;
-}
-.food-menu-icon {
-    color: #fd7e14; /* Turuncu - yemekle ilgili bir renk */
-    flex-shrink: 0;
-}
-.food-menu-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #333;
-    margin: 0;
-}
-.food-menu-list {
-    list-style: none;
-    padding-left: 5px; /* Hafif iç boşluk */
-    margin: 0;
-    font-size: 13px;
-    color: #555;
-    max-height: 100px; /* Çok uzun menüler için scrollbar */
-    overflow-y: auto;
-}
-.food-menu-list li {
-    padding: 3px 0;
-    border-bottom: 1px dashed #eee;
-}
-.food-menu-list li:last-child {
-    border-bottom: none;
-}
-.food-menu-list .food-calorie {
-    font-size: 0.8em;
-    color: #888;
-    margin-left: 5px;
-}
-.food-menu-list .placeholder { /* Yükleniyor veya menü yok mesajı için */
-    color: #999;
-    font-style: italic;
-}
-.food-menu-link {
-    font-size: 11px;
-    color: #007bff;
-    text-decoration: none;
-    align-self: flex-end; /* Sağa yasla */
-    margin-top: 5px;
-}
-.food-menu-link:hover {
-    text-decoration: underline;
-}
-
-
-/* ... (kalan stiller: buton grubu, toggle bölümü, footer aynı) ... */
