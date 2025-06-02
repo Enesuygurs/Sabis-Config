@@ -104,13 +104,22 @@ function processGradeTable(table) {
     const tbody = table.querySelector("tbody");
     if (!tbody) return;
 
+    // ÖNCEKİ ORTALAMA SATIRINI VE HESAPLANMIŞ PUANLARI TEMİZLE
     Array.from(tbody.querySelectorAll("tr"))
-        .filter(row => row.querySelector("td:nth-child(2)")?.textContent.trim() === "Ortalama")
+        .filter(row => {
+            const cell = row.querySelector("td:nth-child(2)");
+            // "Ortalama" yazan ve font-weight-bold olan satırları hedef alalım,
+            // veya sadece "Ortalama" yazan ikinci hücreyi.
+            return cell && cell.textContent.trim() === "Ortalama" && cell.classList.contains("font-weight-bold");
+        })
         .forEach(row => row.remove());
+    
+    // Başarı notu içindeki veya diğer yerlerdeki #notOrtalama'yı ve sub-skorları da temizle
     tbody.querySelectorAll("span#notOrtalama[data-calculated-score='true'], span[data-calculated-score='sub']")
         .forEach(span => span.remove());
 
-    const currentRows = tbody.querySelectorAll("tr");
+    // ... (processGradeTable fonksiyonunun geri kalanı aynı)
+    const currentRows = tbody.querySelectorAll("tr"); // DOM değiştiği için satırları tekrar al
     let totalPoints = 0;
     let hasMakeupExam = false;
 
@@ -146,11 +155,9 @@ function processGradeTable(table) {
                 const notCellParentTd = row.querySelector("td:nth-child(4)") || row.querySelector("td:nth-child(3)");
                 const notCellSpan = notCellParentTd?.querySelector("span:first-child");
                 if (oranCell && notCellSpan) {
-                    const oranText = oranCell.textContent.trim().replace(",", ".");
-                    const notTextContent = getPrimaryTextContent(notCellSpan).split(" ")[0].replace(",", ".");
-                    const oran = parseFloat(oranText);
-                    const not = parseFloat(notTextContent);
-                    if (!isNaN(oran) && notTextContent && notTextContent !== "-" && !isNaN(not) && not >= 0) {
+                    const oran = parseFloat(oranCell.textContent.trim().replace(",", "."));
+                    const not = parseFloat(getPrimaryTextContent(notCellSpan).split(" ")[0].replace(",", "."));
+                    if (!isNaN(oran) && !isNaN(not) && getPrimaryTextContent(notCellSpan) && getPrimaryTextContent(notCellSpan) !== "-") {
                         totalPoints -= (oran * not) / 100;
                     }
                 }
@@ -171,7 +178,7 @@ function processGradeTable(table) {
             totalPointsElement.style.color = "#000";
             totalPointsElement.textContent = ` (${formattedTotal})`;
             totalPointsElement.setAttribute("data-calculated-score", "true");
-            totalPointsElement.id = "notOrtalama";
+            totalPointsElement.id = "notOrtalama"; // Bu ID'nin benzersizliği sorun olabilir, ama şimdilik böyle.
             successGradeCellSpan.appendChild(totalPointsElement);
         }
     } else {
@@ -274,11 +281,24 @@ function initGradeClickHandlers() {
 
 function runOrClearGradeLogic(calculateEnabled) {
     if (!window.location.href.startsWith(SABIS_DERS_URL_PREFIX)) return;
+
     if (calculateEnabled) {
-        enableCalculateGrade();
+        enableCalculateGrade(); // Bu fonksiyon zaten içinde processGradeTable'ı çağırıyor ve initGradeClickHandlers'ı da.
     } else {
-        document.querySelectorAll("span#notOrtalama[data-calculated-score='true'], span[data-calculated-score='sub']")
-            .forEach(span => span.remove());
+        // Not hesaplama kapatıldığında, tüm ilgili DOM elementlerini temizle.
+        document.querySelectorAll(
+            "span#notOrtalama[data-calculated-score='true'], span[data-calculated-score='sub']"
+        ).forEach(span => span.remove());
+
+        // "Ortalama" etiketli tüm satırları da bul ve kaldır.
+        // Bu, hem .card-body içindeki tabloları hem de #icerik içindeki tabloyu kapsamalı.
+        document.querySelectorAll(".card-body table tbody tr, #icerik table tbody tr").forEach(row => {
+            const labelCell = row.querySelector("td:nth-child(2)");
+            if (labelCell && labelCell.textContent.trim() === "Ortalama" && labelCell.classList.contains("font-weight-bold")) {
+                row.remove();
+            }
+        });
+        // Sadece tıklanabilirlik ve "-" için initGradeClickHandlers'ı çağır
         initGradeClickHandlers();
     }
 }

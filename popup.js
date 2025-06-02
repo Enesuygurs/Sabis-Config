@@ -264,5 +264,5 @@ document.addEventListener("DOMContentLoaded", function () {
     setupToggle("themeCheckbox", STORAGE_KEYS.REDMODE, "toggleRedTheme", false);
     setupToggle("themeDarkCheckbox", STORAGE_KEYS.DARKMODE, "toggleDarkTheme", false);
     setupToggle("stealthCheckbox", STORAGE_KEYS.STEALTH, null, true);
-    setupToggle("calculateCheckbox", STORAGE_KEYS.CALCULATE, null, true);
+    setupToggle("calculateCheckbox", STORAGE_KEYS.CALCULATE, null, false);
 });
