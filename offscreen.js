@@ -13,7 +13,7 @@ function extractStudentInfoFromDOM(docText) {
     const studentNumberEl = doc.querySelector('#kt_profile_aside .font-weight-bold.text-dark-50.font-size-sm.pb-6');
     const studentNumber = studentNumberEl ? studentNumberEl.textContent.trim() : 'N/A';
     const profileImageEl = doc.querySelector('#kt_profile_aside .symbol-label img');
-    let profileImageUrl = profileImageEl ? profileImageEl.getAttribute('src') : 'images/icon48.png';
+    let profileImageUrl = profileImageEl ? profileImageEl.getAttribute('src') : 'images/avatar.png';
     if (profileImageUrl && profileImageUrl.startsWith('/')) {
         profileImageUrl = new URL(profileImageUrl, "https://obs.sabis.sakarya.edu.tr/").href;
     }
@@ -30,7 +30,7 @@ function extractStudentInfoFromDOM(docText) {
         name: studentName || 'N/A',
         number: studentNumber,
         department: department || 'N/A',
-        imageUrl: profileImageUrl || 'images/icon48.png'
+        imageUrl: profileImageUrl || 'images/avatar.png'
     };
 }
 

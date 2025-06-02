@@ -37,8 +37,9 @@
      "web_accessible_resources": [ 
         {
             "resources": [
-                "red-theme.css",
-                "dark-theme.css"
+                "themes/red.css",
+                "themes/dark.css",
+                "images/avatar.png"
             ],
             "matches": ["*://*.sakarya.edu.tr/*"] 
         }

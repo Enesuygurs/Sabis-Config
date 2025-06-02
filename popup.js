@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (studentNumberEl) studentNumberEl.textContent = 'Yükleniyor...';
         if (studentGNOEl) studentGNOEl.textContent = 'GNO: Yükleniyor...';
         if (studentBalanceEl) studentBalanceEl.textContent = 'Yükleniyor...';
-        if (studentPhotoEl) studentPhotoEl.src = 'images/icon48.png';
+        if (studentPhotoEl) studentPhotoEl.src = 'images/avatar.png';
     }
 
     function updatePopupWithData(profile, gno, balance) {
@@ -46,14 +46,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             if (studentNumberEl) studentNumberEl.textContent = profile.number || 'N/A';
             if (studentPhotoEl) {
-                studentPhotoEl.src = (profile.imageUrl && profile.imageUrl !== 'images/icon48.png') ? profile.imageUrl : 'images/icon48.png';
-                studentPhotoEl.onerror = function() { this.src = 'images/icon48.png'; };
+                studentPhotoEl.src = (profile.imageUrl && profile.imageUrl !== 'images/avatar.png') ? profile.imageUrl : 'images/avatar.png';
+                studentPhotoEl.onerror = function() { this.src = 'images/avatar.png'; };
             }
         } else {
             if (studentNameEl) studentNameEl.textContent = 'Bilgi Yok';
             if (studentDepartmentEl) studentDepartmentEl.textContent = 'Veri çekilemedi';
             if (studentNumberEl) studentNumberEl.textContent = '-';
-            if (studentPhotoEl) studentPhotoEl.src = 'images/icon48.png';
+            if (studentPhotoEl) studentPhotoEl.src = 'images/avatar.png';
         }
 
         if (studentGNOEl) {
@@ -80,14 +80,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadAndDisplayStudentInfo() {
         displayLoadingState();
         chrome.storage.local.get([STORAGE_KEYS.STUDENT_PROFILE, STORAGE_KEYS.STUDENT_GNO, STORAGE_KEYS.STUDENT_BALANCE], function (storedData) {
-            if (chrome.runtime.lastError) { updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, "Hata", "Hata"); return; }
+            if (chrome.runtime.lastError) { updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/avatar.png'}, "Hata", "Hata"); return; }
             
             updatePopupWithData(storedData[STORAGE_KEYS.STUDENT_PROFILE], storedData[STORAGE_KEYS.STUDENT_GNO], storedData[STORAGE_KEYS.STUDENT_BALANCE]);
             
             chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
                 if (chrome.runtime.lastError) {
                     if (!storedData[STORAGE_KEYS.STUDENT_PROFILE] && !storedData[STORAGE_KEYS.STUDENT_GNO] && !storedData[STORAGE_KEYS.STUDENT_BALANCE]) {
-                        updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, "Hata", "Hata");
+                        updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/avatar.png'}, "Hata", "Hata");
                     }
                     return;
                 }
@@ -95,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                 } else if (response && response.status === "error") {
                      if (!storedData[STORAGE_KEYS.STUDENT_PROFILE] && !storedData[STORAGE_KEYS.STUDENT_GNO] && !storedData[STORAGE_KEYS.STUDENT_BALANCE]) { 
-                        updatePopupWithData({name: "Veri Alınamadı", department:"-", number:"-", imageUrl: 'images/icon48.png'}, "N/A", "N/A");
+                        updatePopupWithData({name: "Veri Alınamadı", department:"-", number:"-", imageUrl: 'images/avatar.png'}, "N/A", "N/A");
                     }
                 } else if (response?.data?.profile?.name === "Giriş Yapılmamış"){
                     updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
@@ -113,17 +113,17 @@ document.addEventListener("DOMContentLoaded", function () {
             displayLoadingState(); 
             chrome.runtime.sendMessage({ action: "fetchStudentData" }, (response) => {
                 if (chrome.runtime.lastError) {
-                    updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/icon48.png'}, "Hata", "Hata");
+                    updatePopupWithData({name: "Hata", department:"Hata", number:"-", imageUrl: 'images/avatar.png'}, "Hata", "Hata");
                     return;
                 }
                 if (response && response.status === "completed" && response.data) {
                     updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                 } else if (response && response.status === "error") {
-                    updatePopupWithData({name: "Yenilenemedi", department:"-", number:"-", imageUrl: 'images/icon48.png'}, "-", "-");
+                    updatePopupWithData({name: "Yenilenemedi", department:"-", number:"-", imageUrl: 'images/avatar.png'}, "-", "-");
                 } else if (response?.data?.profile?.name === "Giriş Yapılmamış"){
                     updatePopupWithData(response.data.profile, response.data.gno, response.data.balance);
                 } else {
-                    updatePopupWithData({name: "Veri Yok", department:"Veri Yok", number:"-", imageUrl: 'images/icon48.png'}, "N/A", "N/A");
+                    updatePopupWithData({name: "Veri Yok", department:"Veri Yok", number:"-", imageUrl: 'images/avatar.png'}, "N/A", "N/A");
                 }
             });
         });
