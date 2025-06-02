@@ -1,4 +1,3 @@
-/* Global Reset ve Temel Stiller */
 *,
 *::before,
 *::after {
@@ -13,19 +12,16 @@ body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f6f8;
     color: #333;
-    width: 300px; /* Biraz daha genişlettim öğrenci kartı için */
+    width: 300px;
     padding: 0;
     line-height: 1.6;
 }
-
 .container {
-    padding: 15px; /* Genel padding biraz azaltıldı */
+    padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Öğeler arası boşluk */
+    gap: 15px;
 }
-
-/* Header */
 .header {
     display: flex;
     align-items: center;
@@ -33,57 +29,48 @@ body {
     border-bottom: 1px solid #e0e0e0;
     padding-bottom: 10px;
 }
-
 .logo {
     width: 32px;
     height: 32px;
 }
-
 .header h1 {
     font-size: 18px;
     font-weight: 600;
     color: #2c3e50;
 }
-
-/* Öğrenci Bilgi Kartı Stilleri */
 .student-info-card {
     display: flex;
     align-items: center;
-    gap: 12px; /* Biraz azalttım */
+    gap: 12px;
     background-color: #ffffff;
-    padding: 12px; /* Biraz azalttım */
+    padding: 12px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
-    /* margin-bottom kaldırıldı, container'daki gap yönetecek */
 }
-
 .student-photo {
-    width: 48px; 
+    width: 48px;
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1px solid #ddd; /* Daha ince border */
+    border: 1px solid #ddd;
     flex-shrink: 0;
 }
-
 .student-details {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 0px; /* Çok yakın olsunlar */
+    gap: 0px;
     min-width: 0;
 }
-
 .student-details p {
     margin: 0;
-    font-size: 12px; /* Genel fontu biraz küçülttüm */
+    font-size: 12px;
     color: #555;
-    line-height: 1.5; /* Biraz artırdım */
+    line-height: 1.5;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
 .student-details .student-name {
     font-size: 14px;
     font-weight: 600;
@@ -96,52 +83,40 @@ body {
 .student-details .student-id {
     font-size: 11px;
 }
-
 .student-details .student-gno {
     font-weight: 500;
     color: #8B0000;
     font-size: 12px;
 }
-
-.student-actions { /* Bu artık sadece refresh butonunu içeriyor */
-    margin-left: auto; /* Sağ tarafa yasla */
-    align-self: flex-start; /* Üstte kalsın */
+.student-actions {
+    margin-left: auto;
+    align-self: flex-start;
 }
-
-/* YENİ: Bakiye Kartı Stilleri */
 .balance-card {
     display: flex;
-    justify-content: space-between; /* Sol ve sağı ayır */
+    justify-content: space-between;
     align-items: center;
     background-color: #ffffff;
-    padding: 10px 12px; /* Biraz daha az dikey padding */
+    padding: 10px 12px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
 }
-
 .balance-info {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 .balance-icon {
-    color: #28a745; /* Yeşil ikon */
+    color: #28a745;
     flex-shrink: 0;
 }
-
 .balance-text {
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     color: #333;
     margin: 0;
 }
-.balance-text span { /* "Bakiye:" kısmı için */
-    font-weight: normal;
-    color: #555;
-}
-
-.btn-balance-load { /* Bakiye Yükle butonuna özel stil */
+.btn-balance-load {
     background-color: #28a745;
     color: white;
     border: none;
@@ -149,8 +124,7 @@ body {
 .btn-balance-load:hover {
     background-color: #218838;
 }
-/* btn-small stilini koruyabilir veya direkt .btn-balance-load içine taşıyabilirsin */
-.btn-small { 
+.btn-small {
     padding: 6px 10px !important;
     font-size: 12px !important;
     gap: 6px !important;
@@ -160,12 +134,10 @@ body {
     height: 13px !important;
     margin-right: 4px !important;
 }
-
-
 .btn-refresh {
     background: none;
     border: none;
-    color: #6c757d; /* Daha soft bir renk */
+    color: #6c757d;
     cursor: pointer;
     padding: 3px;
     border-radius: 50%;
@@ -179,23 +151,20 @@ body {
     width: 14px;
     height: 14px;
 }
-
-/* Buton Grubu */
 .button-group {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 8px; /* Butonlar arası boşluk azaltıldı */
-    padding-top: 10px; /* Karttan sonra biraz boşluk */
+    gap: 8px;
+    padding-top: 10px;
     border-top: 1px solid #e9ecef;
 }
-
 .btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 9px 12px; /* Buton padding biraz ayarlandı */
-    font-size: 13px; /* Buton font boyutu */
+    padding: 9px 12px;
+    font-size: 13px;
     font-weight: 500;
     border: none;
     border-radius: 6px;
@@ -203,14 +172,12 @@ body {
     transition: background-color 0.2s ease-in-out, transform 0.1s ease;
     text-align: center;
 }
-
 .btn:hover {
     opacity: 0.9;
 }
 .btn:active {
     transform: translateY(1px);
 }
-
 .btn-primary {
     background-color: #8B0000;
     color: white;
@@ -218,7 +185,6 @@ body {
 .btn-primary:hover {
     background-color: #a50000;
 }
-
 .btn-secondary {
     background-color: #e9ecef;
     color: #343a40;
@@ -227,34 +193,27 @@ body {
 .btn-secondary:hover {
     background-color: #d3d9df;
 }
-
 .btn svg {
     margin-right: 5px;
 }
-
-/* Toggle Bölümü */
 .toggle-section {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Toggle'lar arası boşluk azaltıldı */
+    gap: 8px;
     padding-top: 10px;
     border-top: 1px solid #e9ecef;
 }
-
 .toggle-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2px 0; /* Toggle item padding ayarlandı */
+    padding: 2px 0;
 }
-
 .toggle-label {
     font-size: 14px;
     font-weight: 500;
     color: #495057;
 }
-
-/* Switch Stilleri (Aynı kalabilir veya renkleri ayarlanabilir) */
 .switch {
     font-size: 17px;
     position: relative;
@@ -262,13 +221,11 @@ body {
     width: 3em;
     height: 1.5em;
 }
-
 .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
-
 .slider {
     position: absolute;
     cursor: pointer;
@@ -281,7 +238,6 @@ body {
     transition: .4s;
     border-radius: 30px;
 }
-
 .slider:before {
     position: absolute;
     content: "";
@@ -293,21 +249,16 @@ body {
     transition: .4s;
     border-radius: 50%;
 }
-
 input:checked + .slider {
     background-color: #8B0000;
     border-color: #7a0000;
 }
-
 input:focus + .slider {
     box-shadow: 0 0 1px #8B0000;
 }
-
 input:checked + .slider:before {
     transform: translateX(1.5em);
 }
-
-/* Footer */
 .footer {
     text-align: center;
     font-size: 11px;
