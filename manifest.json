@@ -33,5 +33,14 @@
             "16": "images/icon16.png",
             "48": "images/icon48.png"
         }
-    }
+    },
+     "web_accessible_resources": [ 
+        {
+            "resources": [
+                "red-theme.css",
+                "dark-theme.css"
+            ],
+            "matches": ["*://*.sakarya.edu.tr/*"] 
+        }
+    ]
 }
