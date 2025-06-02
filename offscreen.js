@@ -72,6 +72,47 @@ function extractGNOFromDOM(docText) {
     return gno;
 }
 
+function extractBalanceFromDOM(docText) {
+    if (!docText) return 'N/A';
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(docText, "text/html");
+
+    // HTML'e göre bakiye seçicisi:
+    // <div bis_skin_checked="1">
+    //     <strong>Kalan Bakiye: </strong><span>140,00 TL</span>
+    //     <br>
+    //     <strong>Tarife: </strong><span>30,00 TL</span>
+    // </div>
+    // "Kalan Bakiye:" strong etiketinin kardeş span'ını alacağız.
+
+    const strongElements = doc.querySelectorAll('.card-body strong');
+    let balance = 'N/A';
+
+    strongElements.forEach(strong => {
+        if (strong.textContent.trim() === "Kalan Bakiye:") {
+            const balanceSpan = strong.nextElementSibling; // strong'dan sonraki ilk kardeş element (span olmalı)
+            if (balanceSpan && balanceSpan.tagName === 'SPAN') {
+                balance = balanceSpan.textContent.trim();
+            }
+        }
+    });
+    return balance;
+}
+
+chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
+    if (request.action === "parseHtmlForProfile") {
+        const profileData = extractStudentInfoFromDOM(request.htmlContent);
+        sendResponse(profileData);
+    } else if (request.action === "parseHtmlForGNO") {
+        const gnoData = extractGNOFromDOM(request.htmlContent);
+        sendResponse(gnoData);
+    } else if (request.action === "parseHtmlForBalance") { // YENİ
+        const balanceData = extractBalanceFromDOM(request.htmlContent);
+        sendResponse(balanceData);
+    }
+    return true;
+});
+
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "parseHtmlForProfile") {

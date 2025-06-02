@@ -45,82 +45,140 @@ body {
     color: #2c3e50;
 }
 
-/* YENİ: Öğrenci Bilgi Kartı Stilleri */
+/* Öğrenci Bilgi Kartı Stilleri */
 .student-info-card {
     display: flex;
     align-items: center;
-    gap: 15px;
-    background-color: #ffffff; /* Beyaz arka plan */
-    padding: 15px;
+    gap: 12px; /* Biraz azalttım */
+    background-color: #ffffff;
+    padding: 12px; /* Biraz azalttım */
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Hafif gölge */
-    margin-bottom: 5px; /* Buton grubundan önce küçük bir boşluk */
-    position: relative; /* Yenileme butonu için */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    /* margin-bottom kaldırıldı, container'daki gap yönetecek */
 }
 
 .student-photo {
-    width: 60px; /* Fotoğraf boyutu */
-    height: 60px;
-    border-radius: 50%; /* Yuvarlak fotoğraf */
-    object-fit: cover; /* Fotoğrafın orantılı sığması */
-    border: 2px solid #e0e0e0;
+    width: 48px; 
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd; /* Daha ince border */
+    flex-shrink: 0;
 }
 
 .student-details {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 2px; /* Detaylar arası dikey boşluk */
+    gap: 0px; /* Çok yakın olsunlar */
+    min-width: 0;
 }
 
 .student-details p {
     margin: 0;
-    font-size: 13px;
+    font-size: 12px; /* Genel fontu biraz küçülttüm */
     color: #555;
-    line-height: 1.4;
+    line-height: 1.5; /* Biraz artırdım */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .student-details .student-name {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #2c3e50;
 }
 .student-details .student-department {
-    font-size: 12px;
+    font-size: 10px;
     color: #777;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px; /* Uzun bölüm adları için */
+}
+.student-details .student-id {
+    font-size: 11px;
 }
 
 .student-details .student-gno {
     font-weight: 500;
-    color: #8B0000; /* Vurgu rengi */
+    color: #8B0000;
+    font-size: 12px;
 }
 
-.btn-refresh {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: #8B0000;
-    cursor: pointer;
-    padding: 5px;
-    border-radius: 50%;
+.student-actions { /* Bu artık sadece refresh butonunu içeriyor */
+    margin-left: auto; /* Sağ tarafa yasla */
+    align-self: flex-start; /* Üstte kalsın */
+}
+
+/* YENİ: Bakiye Kartı Stilleri */
+.balance-card {
+    display: flex;
+    justify-content: space-between; /* Sol ve sağı ayır */
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px 12px; /* Biraz daha az dikey padding */
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.balance-info {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+}
+
+.balance-icon {
+    color: #28a745; /* Yeşil ikon */
+    flex-shrink: 0;
+}
+
+.balance-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+}
+.balance-text span { /* "Bakiye:" kısmı için */
+    font-weight: normal;
+    color: #555;
+}
+
+.btn-balance-load { /* Bakiye Yükle butonuna özel stil */
+    background-color: #28a745;
+    color: white;
+    border: none;
+}
+.btn-balance-load:hover {
+    background-color: #218838;
+}
+/* btn-small stilini koruyabilir veya direkt .btn-balance-load içine taşıyabilirsin */
+.btn-small { 
+    padding: 6px 10px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+}
+.btn-small svg {
+    width: 13px !important;
+    height: 13px !important;
+    margin-right: 4px !important;
+}
+
+
+.btn-refresh {
+    background: none;
+    border: none;
+    color: #6c757d; /* Daha soft bir renk */
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 50%;
+    display: flex;
 }
 .btn-refresh:hover {
-    background-color: rgba(139, 0, 0, 0.1);
+    color: #343a40;
+    background-color: rgba(0, 0, 0, 0.05);
 }
 .btn-refresh svg {
     width: 14px;
     height: 14px;
 }
-
 
 /* Buton Grubu */
 .button-group {
@@ -173,7 +231,6 @@ body {
 .btn svg {
     margin-right: 5px;
 }
-
 
 /* Toggle Bölümü */
 .toggle-section {
