@@ -69,13 +69,13 @@ async function updateStudentData() {
         } else {
             const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
             if (!oldProfile || !oldProfile.name || oldProfile.name === 'N/A') {
-                await chrome.storage.local.set({ studentProfile: { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/icon48.png'} });
+                await chrome.storage.local.set({ studentProfile: { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/avatar.png'} });
             } else if (profileData && profileData.name === 'N/A' && profileData.number === 'N/A') {
-                await chrome.storage.local.set({ studentProfile: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/icon48.png'} });
+                await chrome.storage.local.set({ studentProfile: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png'} });
             }
         }
     } catch (e) {
-        profileData = { name: "Hata", number: "Hata", department: "Hata", imageUrl: 'images/icon48.png' };
+        profileData = { name: "Hata", number: "Hata", department: "Hata", imageUrl: 'images/avatar.png' };
     }
 
     try {

@@ -18,7 +18,7 @@ function manageTheme(themeName, cssFileName, enable) {
             linkElement.id = themeId;
             linkElement.rel = "stylesheet";
             linkElement.type = "text/css";
-            linkElement.href = chrome.runtime.getURL(cssFileName);
+            linkElement.href = chrome.runtime.getURL(`themes/${cssFileName}`);
             document.head.appendChild(linkElement);
         }
     } else if (linkElement) {
@@ -34,24 +34,43 @@ function applyStealthStyles(element, styles, textContent) {
 }
 
 function enableStealthMode() {
+    const avatarUrl = chrome.runtime.getURL("images/avatar.png"); // YENİ SATIR
+
     document.querySelectorAll(".symbol-label img, .symbol.symbol-35.symbol-light-success img")
         .forEach(img => {
             img.style.display = "none";
             const parent = img.parentElement;
             if (parent) {
-                Object.assign(parent.style, { backgroundImage: "url('https://attic.sh/prxqzg7nk65j2ccjjyogebflzb4q')", backgroundSize: "cover", backgroundPosition: "center" });
-                if (parent.classList.contains('symbol-35')) Object.assign(parent.style, { backgroundColor: "#d7d7d7", width: "35px", height: "35px", borderRadius: "50%" });
+                Object.assign(parent.style, {
+                    backgroundImage: `url('${avatarUrl}')`, // DEĞİŞTİRİLEN SATIR
+                    backgroundSize: "cover",
+                    backgroundPosition: "center"
+                });
+                if (parent.classList.contains('symbol-35')) {
+                    Object.assign(parent.style, {
+                        backgroundColor: "#d7d7d7", // Bu avatarın görünümüne göre ayarlanabilir
+                        width: "35px",
+                        height: "35px",
+                        borderRadius: "50%"
+                    });
+                }
             }
         });
-    const stealthMappings = [
-        { selector: ".card-title.font-weight-bolder.text-dark-75.text-hover-primary.font-size-h4.m-0.pt-7.pb-1", text: "Anonymous" },
-        { selector: ".font-weight-bold.text-dark-50.font-size-sm.pb-6", text: "Stealth Mode ON" },
-        { selector: ".text-dark-50.font-weight-bolder.font-size-base.d-none.d-md-inline.mr-3", text: "Anonymous" }
-    ];
-    stealthMappings.forEach(map => {
-        document.querySelectorAll(map.selector).forEach(el => applyStealthStyles(el, { color: "#b9b9b9", fontWeight: "bold" }, map.text));
-    });
-    document.querySelectorAll(".card-body .pb-5 .pt-1, .navi-spacer-x-0").forEach(el => el.style.display = "none");
+    // ... fonksiyonun geri kalanı aynı kalacak ...
+    const selectorsAndText = {
+        ".card-title.font-weight-bolder.text-dark-75.text-hover-primary.font-size-h4.m-0.pt-7.pb-1": "Anonymous",
+        ".font-weight-bold.text-dark-50.font-size-sm.pb-6": "Stealth Mode ON",
+        ".text-dark-50.font-weight-bolder.font-size-base.d-none.d-md-inline.mr-3": "Anonymous"
+    };
+    for (const selector in selectorsAndText) {
+        document.querySelectorAll(selector).forEach(el => {
+            el.style.setProperty("color", "#b9b9b9", "important");
+            el.style.setProperty("font-weight", "bold", "important");
+            el.innerText = selectorsAndText[selector];
+        });
+    }
+    document.querySelectorAll(".card-body .pb-5 .pt-1, .navi-spacer-x-0")
+        .forEach(el => el.style.display = "none");
     document.querySelectorAll("*").forEach(element => {
         const computedStyle = window.getComputedStyle(element);
         if (computedStyle?.getPropertyValue("background-image").includes("data:image/svg+xml")) {
@@ -265,8 +284,8 @@ function runOrClearGradeLogic(calculateEnabled) {
 }
 
 function applyInitialSettings(settings) {
-    manageTheme("red", "red-theme.css", settings[STORAGE_KEYS.REDMODE]);
-    manageTheme("dark", "dark-theme.css", settings[STORAGE_KEYS.DARKMODE]);
+    manageTheme("red", "red.css", settings[STORAGE_KEYS.REDMODE]);
+    manageTheme("dark", "dark.css", settings[STORAGE_KEYS.DARKMODE]);
     if (settings[STORAGE_KEYS.STEALTH]) enableStealthMode();
     runOrClearGradeLogic(settings[STORAGE_KEYS.CALCULATE]);
 }
@@ -277,8 +296,8 @@ chrome.storage.local.get(Object.values(STORAGE_KEYS), (settings) => {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
-        if (changes[STORAGE_KEYS.REDMODE] !== undefined) manageTheme("red", "red-theme.css", changes[STORAGE_KEYS.REDMODE].newValue);
-        if (changes[STORAGE_KEYS.DARKMODE] !== undefined) manageTheme("dark", "dark-theme.css", changes[STORAGE_KEYS.DARKMODE].newValue);
+        if (changes[STORAGE_KEYS.REDMODE] !== undefined) manageTheme("red", "red.css", changes[STORAGE_KEYS.REDMODE].newValue);
+        if (changes[STORAGE_KEYS.DARKMODE] !== undefined) manageTheme("dark", "dark.css", changes[STORAGE_KEYS.DARKMODE].newValue);
         if (changes[STORAGE_KEYS.STEALTH] !== undefined) {
             // Stealth modu için sayfa yenilemesi popup.js'den yönetiliyor.
             // Eğer anında değişiklik isteniyorsa, enableStealthMode veya tersi çağrılabilir.
@@ -312,11 +331,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     // YENİ: Popup'tan gelen tema toggle mesajlarını dinle
     else if (request.action === "toggleRedTheme") {
-        manageTheme("red", "red-theme.css", request.state);
+        manageTheme("red", "red.css", request.state);
         sendResponse({status: "red_theme_toggled"});
     }
     else if (request.action === "toggleDarkTheme") {
-        manageTheme("dark", "dark-theme.css", request.state);
+        manageTheme("dark", "dark.css", request.state);
         sendResponse({status: "dark_theme_toggled"});
     }
     return true; // Diğer mesajlar için de true döndürmek iyi bir pratik olabilir.
