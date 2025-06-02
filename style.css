@@ -267,3 +267,107 @@ input:checked + .slider:before {
     border-top: 1px solid #e0e0e0;
     margin-top: auto;
 }
+
+
+/* ... (önceki stiller aynı kalacak) ... */
+
+/* Bakiye Kartı Stilleri */
+.balance-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+.balance-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.balance-icon {
+    color: #17a2b8; /* Info mavisi veya başka bir renk */
+    flex-shrink: 0;
+}
+.balance-text {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+.btn-balance-load {
+    background-color: #28a745;
+    color: white;
+    border: none;
+}
+.btn-balance-load:hover {
+    background-color: #218838;
+}
+
+/* YENİ: Yemek Menüsü Kartı Stilleri */
+.food-menu-card {
+    background-color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.food-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+    margin-bottom: 5px;
+}
+.food-menu-icon {
+    color: #fd7e14; /* Turuncu - yemekle ilgili bir renk */
+    flex-shrink: 0;
+}
+.food-menu-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+.food-menu-list {
+    list-style: none;
+    padding-left: 5px; /* Hafif iç boşluk */
+    margin: 0;
+    font-size: 13px;
+    color: #555;
+    max-height: 100px; /* Çok uzun menüler için scrollbar */
+    overflow-y: auto;
+}
+.food-menu-list li {
+    padding: 3px 0;
+    border-bottom: 1px dashed #eee;
+}
+.food-menu-list li:last-child {
+    border-bottom: none;
+}
+.food-menu-list .food-calorie {
+    font-size: 0.8em;
+    color: #888;
+    margin-left: 5px;
+}
+.food-menu-list .placeholder { /* Yükleniyor veya menü yok mesajı için */
+    color: #999;
+    font-style: italic;
+}
+.food-menu-link {
+    font-size: 11px;
+    color: #007bff;
+    text-decoration: none;
+    align-self: flex-end; /* Sağa yasla */
+    margin-top: 5px;
+}
+.food-menu-link:hover {
+    text-decoration: underline;
+}
+
+
+/* ... (kalan stiller: buton grubu, toggle bölümü, footer aynı) ... */

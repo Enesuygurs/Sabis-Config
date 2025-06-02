@@ -2,7 +2,8 @@ const STUDENT_PROFILE_URL = "https://obs.sabis.sakarya.edu.tr/";
 const TRANSCRIPT_URL = "https://obs.sabis.sakarya.edu.tr/Transkript";
 const CARD_BALANCE_URL = "https://obs.sabis.sakarya.edu.tr/Kart/Bakiye";
 const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('offscreen.html');
-
+const FOOD_MENU_URL = "https://menu.sabis.sakarya.edu.tr/"; // YENİ
+const FOOD_MENU_API_URL = "https://menu.sabis.sakarya.edu.tr/Home/GetirGunlukMenu";
 let creatingOffscreenPromise = null;
 
 async function hasOffscreenDocument() {
@@ -36,64 +37,153 @@ async function setupOffscreenDocument() {
     }
 }
 
+async function fetchViaAPIAndParseViaOffscreen(url, method = 'GET', body = null, parseAction) {
+    await setupOffscreenDocument();
+    try {
+        const fetchOptions = {
+            method: method,
+            credentials: 'include',
+            headers: {
+                "accept": "text/html, */*; q=0.01",
+                "accept-language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+                "x-requested-with": "XMLHttpRequest"
+            }
+        };
+
+        if (method === 'POST' && body) {
+            fetchOptions.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+            fetchOptions.body = new URLSearchParams(body).toString();
+        }
+
+        const response = await fetch(url, fetchOptions);
+
+        if (!response.ok) {
+            console.error(`API isteği başarısız ${url}: ${response.status} ${response.statusText}`);
+            const errorText = await response.text();
+            // console.error("API Hata detayı:", errorText.substring(0, 500));
+            if (parseAction === "parseFoodMenuAPIResponse") return { dateLabel: `Hata: ${response.status}`, normalMenu: [], dietMenu: [], hasMenu: false };
+            if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
+            return null;
+        }
+        const htmlText = await response.text();
+        // if (url === FOOD_MENU_API_URL) console.log(`BG: ${url} için API yanıtı (ham):\n`, htmlText.substring(0, 500));
+
+        return await chrome.runtime.sendMessage({ 
+            action: parseAction, 
+            htmlContent: htmlText 
+        });
+
+    } catch (error) {
+        console.error(`Fetch/API parse hatası ${url}:`, error);
+        if (parseAction === "parseFoodMenuAPIResponse") return { dateLabel: "API Bağlantı Hatası", normalMenu: [], dietMenu: [], hasMenu: false };
+        if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
+        return null;
+    }
+}
+// background.js (fetchAndParseViaOffscreen içinde)
 async function fetchAndParseViaOffscreen(url, parseAction) {
     await setupOffscreenDocument();
     try {
         const response = await fetch(url, { credentials: 'include' });
         if (!response.ok) {
-            return (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") ? 'N/A' : null;
+            console.error(`Sayfa alınamadı ${url}: ${response.status} ${response.statusText}`);
+            return parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance" || parseAction === "parseHtmlForFoodMenu" ? (parseAction === "parseHtmlForFoodMenu" ? { dateLabel: "Hata: Sayfa alınamadı", normalMenu: [], dietMenu: [], hasMenu: false } : 'N/A') : null;
         }
         const htmlText = await response.text();
-        return await chrome.runtime.sendMessage({ action: parseAction, htmlContent: htmlText });
+
+        // HAM HTML'İ LOGLA (Sadece yemek menüsü için)
+        if (url === FOOD_MENU_URL) {
+            console.log("BG: Fetched HTML for Food Menu (RAW):", htmlText.substring(0, 5000)); // İlk 5000 karakter
+        }
+
+        const result = await chrome.runtime.sendMessage({
+            action: parseAction,
+            htmlContent: htmlText
+        });
+        return result;
+
     } catch (error) {
-        return (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") ? 'N/A' : null;
+        console.error(`Sayfa çekme/offscreen parse etme hatası ${url}:`, error);
+        return parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance" || parseAction === "parseHtmlForFoodMenu" ? (parseAction === "parseHtmlForFoodMenu" ? { dateLabel: "Hata: Parse edilemedi", normalMenu: [], dietMenu: [], hasMenu: false } : 'N/A') : null;
     }
 }
 
-async function fetchDataAndStore(storageKey, url, parseAction, defaultValue) {
+async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, method = 'GET', body = null) {
     let data = defaultValue;
     try {
-        data = await fetchAndParseViaOffscreen(url, parseAction);
-        const dataToStore = (data && (typeof data !== 'string' || data !== 'N/A') && (typeof data === 'object' ? (data.name !== 'N/A' || data.number !== 'N/A') : true)) ? data : defaultValue;
+        data = await fetchViaAPIAndParseViaOffscreen(url, method, body, parseAction);
         
-        if (storageKey === 'studentProfile' && data && data.name === 'N/A' && data.number === 'N/A') {
-             const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
-             if (oldProfile && oldProfile.name && oldProfile.name !== 'N/A') { // Sadece eski geçerli veri varsa "Giriş Yapılmamış" yap
-                await chrome.storage.local.set({ [storageKey]: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png' } });
-                return { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png' };
-             }
+        let dataIsValid = false;
+        if (data) {
+            if (typeof data === 'string') dataIsValid = data !== 'N/A';
+            else if (typeof data === 'object') {
+                if (storageKey === 'studentProfile') dataIsValid = data.name !== 'N/A' || data.number !== 'N/A';
+                else if (storageKey === 'foodMenu') dataIsValid = data.hasMenu !== undefined; // Sadece hasMenu'nun varlığını kontrol et
+                else dataIsValid = true;
+            }
+        }
+        
+        const dataToStore = dataIsValid ? data : defaultValue;
+        
+        if (storageKey === 'studentProfile' && dataToStore.name === 'N/A' && dataToStore.number === 'N/A') {
+            const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
+            if (oldProfile && oldProfile.name && oldProfile.name !== 'N/A' && oldProfile.name !== "Giriş Yapılmamış") {
+                 await chrome.storage.local.set({ [storageKey]: { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png' } });
+                 return { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png' };
+            }
         }
         await chrome.storage.local.set({ [storageKey]: dataToStore });
-        return dataToStore; // Return the data that was actually stored or attempted to be stored
+        return dataToStore;
     } catch (e) {
-        // In case of an error during fetch/parse or storage, return the default value
-        // and ensure the default is stored if nothing valid was fetched.
+        console.error(`BG: fetchDataAndStore (${storageKey}) Hata:`, e);
         await chrome.storage.local.set({ [storageKey]: defaultValue });
         return defaultValue;
     }
 }
-
-
 async function updateStudentData() {
     const profileDefault = { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/avatar.png' };
     const gnoDefault = 'N/A';
     const balanceDefault = 'N/A';
+    const today = new Date();
+    const options = { weekday: 'long', day: 'numeric', month: 'long' };
+    const formattedDateForMenu = today.toLocaleDateString('tr-TR', options) + " Menüsü"; // Popup'ta kullanılacak başlık
+    const foodMenuDefault = { dateLabel: formattedDateForMenu, normalMenu: [], dietMenu: [], hasMenu: false };
 
-    const [profileData, gnoData, balanceData] = await Promise.all([
-        fetchDataAndStore('studentProfile', STUDENT_PROFILE_URL, "parseHtmlForProfile", profileDefault),
-        fetchDataAndStore('studentGNO', TRANSCRIPT_URL, "parseHtmlForGNO", gnoDefault),
-        fetchDataAndStore('studentBalance', CARD_BALANCE_URL, "parseHtmlForBalance", balanceDefault)
+
+    const foodMenuPayload = {
+        'year': today.getFullYear(),
+        'month': today.getMonth() + 1,
+        'day': today.getDate()
+    };
+
+    const [profileData, gnoData, balanceData, rawFoodMenuData] = await Promise.all([
+        fetchDataAndStore('studentProfile', STUDENT_PROFILE_URL, "parseHtmlForProfile", profileDefault, 'GET'),
+        fetchDataAndStore('studentGNO', TRANSCRIPT_URL, "parseHtmlForGNO", gnoDefault, 'GET'),
+        fetchDataAndStore('studentBalance', CARD_BALANCE_URL, "parseHtmlForBalance", balanceDefault, 'GET'),
+        // Yemek menüsü için parse edilmiş veriyi alıyoruz, ama dateLabel'ı biz ekleyeceğiz.
+        fetchDataAndStore('foodMenuData', FOOD_MENU_API_URL, "parseFoodMenuAPIResponse", { normalMenu:[], dietMenu:[], hasMenu:false }, 'POST', foodMenuPayload)
     ]);
     
-    return { profile: profileData, gno: gnoData, balance: balanceData };
+    // foodMenuData'ya tarihi ekle, çünkü API yanıtından gelmiyor olabilir.
+    const finalFoodMenuData = {
+        ...rawFoodMenuData, // parse edilmiş normalMenu, dietMenu, hasMenu
+        dateLabel: formattedDateForMenu // Bizim oluşturduğumuz tarih etiketi
+    };
+    await chrome.storage.local.set({ foodMenu: finalFoodMenuData }); // dateLabel ile birlikte sakla
+    
+    // console.log("BG: Final food menu for popup:", finalFoodMenuData);
+    return { profile: profileData, gno: gnoData, balance: balanceData, foodMenu: finalFoodMenuData };
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "fetchStudentData") {
         updateStudentData()
             .then(data => sendResponse({ status: "completed", data }))
-            .catch(error => sendResponse({ status: "error", message: error.toString() }));
-        return true; // Indicates asynchronous response
+            .catch(error => {
+                console.error("BG: updateStudentData Hata:", error);
+                sendResponse({ status: "error", message: error.toString() });
+            });
+        return true; 
     }
     // Bu action'lar popup.js tarafından gönderilmiyorsa kaldırılabilir.
     if (request.action === "calculateGrades") calculateGrades();
