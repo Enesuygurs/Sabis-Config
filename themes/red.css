@@ -450,8 +450,8 @@ i.symbol-badge.bg-info {
   background: #111111 !important;
 }
 .firstRow td {
-  border-top: 3px solid #f5f5f5 !important;
-  border-bottom: 3px solid #f5f5f5 !important;
+  border-top: 3px solid #f5f5f5;
+  border-bottom: 3px solid #f5f5f5;
 }
 .firstRow td {
   border-top-width: 3px;
