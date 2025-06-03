@@ -1,11 +1,11 @@
 .header {
-  background: #111111;
+  background: #111111 !important;
 }
 .brand {
-  background: #111111;
+  background: #111111 !important;
 }
 .card-body {
-  background: #131313;
+  background: #10101030;
 }
 .content {
   background: #111111;
@@ -31,9 +31,6 @@
 th {
   color: white;
 }
-.card.card-custom {
-  border: 3px solid #181818 !important;
-}
 .bg-white {
   background-color: #111111 !important;
 }
@@ -56,12 +53,14 @@ th {
     .menu-item-here
   ):not(.menu-item-active):hover
   > .menu-link {
-  background-color: #111111;
+  background-color: #121212 !important;
 }
 .table th,
 .table td {
-  border-top: 1px solid #1a1a1a;
+  vertical-align: middle;
+  border-top: none !important;;
   color: #9d9d9d;
+  font-weight: 500;
 }
 .symbol.symbol-light-primary .symbol-label {
   background-color: #161616 !important;
@@ -101,7 +100,7 @@ th {
 .fc-unthemed .fc-popover,
 .fc-unthemed .fc-list-view,
 .fc-unthemed .fc-list-heading td {
-  border-color: #111111 !important;
+  border-color: #212121 !important;
 }
 td.fc-widget-content {
   border: 1px solid #212121 !important;
@@ -122,9 +121,8 @@ td.fc-widget-content {
 td.fc-axis.fc-time.fc-widget-content {
   color: #b5b5c3;
 }
-td {
-  background: #111111 !important;
-  border: 0 !important;
+div.d-flex > table > tbody > tr > td {
+    background: #111111 !important;
 }
 .table-bordered {
   border: 1px solid #111111 !important;
@@ -191,7 +189,7 @@ body {
   color: #ffffff;
 }
 .card.card-custom {
-  box-shadow: none !important;
+  box-shadow: 0px 0px 3px 2px rgb(20 20 20 / 70%) !important;
 }
 .aside {
   box-shadow: 0px 0px 5px 0px rgba(82, 63, 105, 0.08) !important;
@@ -223,9 +221,8 @@ body {
 .card.card-custom.gutter-b {
   background: none;
 }
-.aside-menu .menu-nav > .menu-item > .menu-heading .menu-text,
 .aside-menu .menu-nav > .menu-item > .menu-link .menu-text {
-  color: #9f9f9f;
+    color: #919191 !important;
 }
 .swal2-container .swal2-html-container {
   height: auto !important;
@@ -396,10 +393,7 @@ tr.firstRow {
 .navi .navi-item .navi-link .navi-icon i {
   color: #707070;
 }
-.aside-menu .menu-nav > .menu-item > .menu-heading .menu-icon,
-.aside-menu .menu-nav > .menu-item > .menu-link .menu-icon {
-  color: #707070;
-}
+
 .scroll.ps > .ps__rail-y > .ps__thumb-y {
   background: #181818 !important;
 }
@@ -410,4 +404,15 @@ li[class*="menuYemekListesi"],
 li[class*="list-group-item icerikToolTip"] {
   background: #131313 !important;
   border: 1px solid #1e1e1e;
+}
+@media (min-width: 992px) {
+  .brand .btn .svg-icon svg g [fill] {
+    fill: #ffffff;
+  }
+}
+.aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover > .menu-heading .menu-icon, .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover > .menu-link .menu-icon {
+    color: #3699FF;
+}
+.aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-heading .menu-text, .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-link .menu-text {
+    color: #3699FF;
 }
