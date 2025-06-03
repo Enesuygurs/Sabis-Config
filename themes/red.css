@@ -616,3 +616,24 @@ li[class*="menuYemekListesi"] > small {
     color: #df1212;
   }
 }
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span)  {
+   display: grid;
+}
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > span {
+    background: #9d1616 !important;
+    padding: 10px;
+    margin-top: 2px;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > strong {
+    padding: 0 0 4px 0;
+    margin-top: 2px;
+    color: rgb(39, 39, 39);
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+}
