@@ -69,6 +69,20 @@ function enableStealthMode() {
             el.innerText = selectorsAndText[selector];
         });
     }
+    
+   const naviFooterElements = document.querySelectorAll(".navi-footer.px-8.py-5");
+    naviFooterElements.forEach(footer => {
+        Array.from(footer.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent.trim();
+                // Regex'i güncelle: 'g', 'G', 'b' veya 'B' ile başlayıp sayılarla devam etsin
+                if (/^[gGbB]\d+$/.test(text)) { // ESKİ: /^[gG]\d+$/
+                    node.textContent = ""; 
+                }
+            }
+        });
+    });
+
     document.querySelectorAll(".card-body .pb-5 .pt-1")
         .forEach(el => el.style.display = "none");
     document.querySelectorAll("*").forEach(element => {

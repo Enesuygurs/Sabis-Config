@@ -58,7 +58,7 @@ th {
 .table th,
 .table td {
   vertical-align: middle;
-  border-top: none !important;;
+  border-top: none !important;
   color: #9d9d9d;
   font-weight: 500;
 }
@@ -122,7 +122,7 @@ td.fc-axis.fc-time.fc-widget-content {
   color: #b5b5c3;
 }
 div.d-flex > table > tbody > tr > td {
-    background: #111111 !important;
+  background: #111111 !important;
 }
 .table-bordered {
   border: 1px solid #111111 !important;
@@ -222,7 +222,7 @@ body {
   background: none;
 }
 .aside-menu .menu-nav > .menu-item > .menu-link .menu-text {
-    color: #919191 !important;
+  color: #919191 !important;
 }
 .swal2-container .swal2-html-container {
   height: auto !important;
@@ -410,39 +410,67 @@ li[class*="list-group-item icerikToolTip"] {
     fill: #ffffff;
   }
 }
-.aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover > .menu-heading .menu-icon, .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(.menu-item-here):not(.menu-item-active):hover > .menu-link .menu-icon {
-    color: #3699FF;
+.aside-menu
+  .menu-nav
+  > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(
+    .menu-item-here
+  ):not(.menu-item-active):hover
+  > .menu-heading
+  .menu-icon,
+.aside-menu
+  .menu-nav
+  > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(
+    .menu-item-here
+  ):not(.menu-item-active):hover
+  > .menu-link
+  .menu-icon {
+  color: #3699ff;
 }
-.aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-heading .menu-text, .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-link .menu-text {
-    color: #3699FF;
+.aside-menu
+  .menu-nav
+  > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(
+    .menu-item-here
+  ):not(.menu-item-active):hover
+  .menu-heading
+  .menu-text,
+.aside-menu
+  .menu-nav
+  > .menu-item:not(.menu-item-parent):not(.menu-item-open):not(
+    .menu-item-here
+  ):not(.menu-item-active):hover
+  .menu-link
+  .menu-text {
+  color: #3699ff;
 }
 
-div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span)  {
-   display: grid;
+div[class*="d-flex justify-content-between"]
+  > div[bis_skin_checked*="1"]:has(> strong, span) {
+  display: grid;
 }
-div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > span {
-    background: #2685e6;
-    padding: 10px;
-    margin-top: 2px;
-    color: white;
-    border-radius: 5px;
-    font-weight: 600;
-    font-size: 14px;
+div[class*="d-flex justify-content-between"]
+  > div[bis_skin_checked*="1"]:has(> strong, span)
+  > span {
+  background: #2685e6;
+  padding: 10px;
+  margin-top: 2px;
+  color: white;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
 }
 
-div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > strong {
-    padding: 0 0 4px 0;
-    margin-top: 2px;
-    color: white;
-    border-radius: 5px;
-    font-weight: 600;
-    font-size: 14px;
+div[class*="d-flex justify-content-between"]
+  > div[bis_skin_checked*="1"]:has(> strong, span)
+  > strong {
+  padding: 0 0 4px 0;
+  margin-top: 2px;
+  color: white;
+  border-radius: 5px;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .table-hover tbody tr:hover {
-    background-color: #2e2e2eab !important;
+  background-color: #2e2e2eab !important;
 }
-
-
-
-
