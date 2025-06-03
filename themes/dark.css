@@ -416,3 +416,33 @@ li[class*="list-group-item icerikToolTip"] {
 .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-heading .menu-text, .aside-menu .menu-nav > .menu-item:not(.menu-item-parent):not(.menu-item-open):not( .menu-item-here ):not(.menu-item-active):hover .menu-link .menu-text {
     color: #3699FF;
 }
+
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span)  {
+   display: grid;
+}
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > span {
+    background: #2685e6;
+    padding: 10px;
+    margin-top: 2px;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+div[class*="d-flex justify-content-between"] > div[bis_skin_checked*="1"]:has(> strong, span) > strong {
+    padding: 0 0 4px 0;
+    margin-top: 2px;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #2e2e2eab !important;
+}
+
+
+
+
