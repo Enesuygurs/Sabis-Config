@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
         STUDENT_PROFILE: "studentProfile",
         STUDENT_GNO: "studentGNO",
         STUDENT_BALANCE: "studentBalance",
-        FOOD_MENU: "foodMenu"
+        FOOD_MENU: "foodMenu",
+        PREFERRED_MENU_TYPE: "preferredMenuType"
     };
 
     const ELEMENTS = {
@@ -39,10 +40,16 @@ document.addEventListener("DOMContentLoaded", function () {
         themeCheckbox: document.getElementById("themeCheckbox"),
         themeDarkCheckbox: document.getElementById("themeDarkCheckbox"),
         stealthCheckbox: document.getElementById("stealthCheckbox"),
-        calculateCheckbox: document.getElementById("calculateCheckbox")
+        calculateCheckbox: document.getElementById("calculateCheckbox"),
+        toggleFoodMenuTypeBtn: document.getElementById("toggleFoodMenuTypeBtn")
     };
+     Object.keys(ELEMENTS).forEach(key => {
+        if (!ELEMENTS[key]) {
+            console.warn(`Element bulunamadı (ID: ${key})`); // Hata yerine uyarı
+        }
+    });
 function $(id) { return document.getElementById(id); } // Basit bir yardımcı
-     // popup.js
+      let currentPreferredMenuType = 'normal';
 
     function showMainContent() {
         console.log("showMainContent çağrıldı");
@@ -90,6 +97,108 @@ function $(id) { return document.getElementById(id); } // Basit bir yardımcı
     if (ELEMENTS.backToMainBtnHeader) {
         ELEMENTS.backToMainBtnHeader.addEventListener("click", showMainContent);
     }
+
+   // popup.js
+
+// ... (STORAGE_KEYS, ELEMENTS, currentPreferredMenuType, setTextContent, setProfileField, displayLoadingState aynı) ...
+
+    function renderFoodMenu(foodMenuData, preferredType) {
+        console.log("renderFoodMenu çağrıldı. Tercih:", preferredType, "Gelen Data:", foodMenuData);
+        if (!ELEMENTS.foodMenuTitle || !ELEMENTS.foodMenuList) {
+            console.error("Yemek menüsü başlık veya liste elementi bulunamadı!");
+            return;
+        }
+        
+        const defaultErrorMsg = "Menü bilgisi alınamadı.";
+        const loadingMsg = "Yükleniyor...";
+        
+        if (foodMenuData) {
+            let menuToDisplay = [];
+            let menuTypeLabel = "Genel"; // Varsayılan
+
+            if (preferredType === 'diet' && foodMenuData.dietMenu && foodMenuData.dietMenu.length > 0) {
+                menuToDisplay = foodMenuData.dietMenu;
+                menuTypeLabel = "Diyet";
+            } else if (foodMenuData.normalMenu && foodMenuData.normalMenu.length > 0) {
+                menuToDisplay = foodMenuData.normalMenu;
+                // menuTypeLabel zaten "Genel"
+                if (preferredType === 'diet') {
+                    // console.log("Diyet menüsü istendi ancak boş, normal menü gösteriliyor.");
+                }
+            } else if (foodMenuData.dietMenu && foodMenuData.dietMenu.length > 0) { 
+                menuToDisplay = foodMenuData.dietMenu;
+                menuTypeLabel = "Diyet";
+            }
+
+            let menuDatePart;
+            // foodMenuData.dateLabel'ı kontrol et, eğer BG'den formatlı geliyorsa onu kullan,
+            // yoksa veya hatalıysa bugünün tarihini formatla.
+            // BG'deki updateStudentData'da zaten formatlı tarih ekliyorduk dateLabel'a.
+            if (foodMenuData.dateLabel && 
+                !foodMenuData.dateLabel.includes("Hata") && 
+                !foodMenuData.dateLabel.includes("Yükleniyor") &&
+                !foodMenuData.dateLabel.includes("bekleniyor") &&
+                !foodMenuData.dateLabel.includes("alınamadı")) {
+                
+                // Gelen dateLabel'dan gün ismini (Salı, Çarşamba vb.) çıkaralım.
+                // Örnek: "3 Haziran Salı Menüsü" -> "3 Haziran Menüsü"
+                // Veya "Bugün - 3 Haziran Salı - Genel Menü" -> "Bugün - 3 Haziran - Genel Menü"
+                let labelParts = foodMenuData.dateLabel.split(" ");
+                // Haftanın günlerini içeren bir liste
+                const daysOfWeek = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
+                // Gün ismini filtrele
+                labelParts = labelParts.filter(part => !daysOfWeek.includes(part));
+                menuDatePart = labelParts.join(" ").replace("Menüsü", "").trim(); // "Menüsü" kelimesini de çıkaralım, sonda ekleyeceğiz
+                 // Eğer "Bugün - Tarih - Tip" formatı varsa ve tip çıkmışsa
+                if (menuDatePart.endsWith(" - Genel") || menuDatePart.endsWith(" - Diyet")) {
+                    menuDatePart = menuDatePart.substring(0, menuDatePart.lastIndexOf(" - ")).trim();
+                }
+
+
+            } else { 
+                const today = new Date();
+                // Sadece gün ve ay istiyoruz, yıl ve gün ismi olmadan.
+                const options = { day: 'numeric', month: 'long' }; // YENİ FORMAT
+                menuDatePart = today.toLocaleDateString('tr-TR', options);
+            }
+            
+            setTextContent(ELEMENTS.foodMenuTitle, `${menuDatePart} ${menuTypeLabel} Menüsü`);
+            ELEMENTS.foodMenuList.innerHTML = ""; 
+
+            if (foodMenuData.hasMenu && menuToDisplay.length > 0) {
+                menuToDisplay.forEach(item => {
+                    if (item.name && !item.name.includes("bekleniyor") && !item.name.includes("alınamadı")) {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = item.name;
+                        if (item.calorie && item.calorie !== "N/A" && item.calorie !== "0") {
+                            const calorieSpan = document.createElement("span");
+                            calorieSpan.className = "food-calorie";
+                            calorieSpan.textContent = `(${item.calorie} kcal)`;
+                            listItem.appendChild(calorieSpan);
+                        }
+                        ELEMENTS.foodMenuList.appendChild(listItem);
+                    }
+                });
+                if (ELEMENTS.foodMenuList.children.length === 0) {
+                    ELEMENTS.foodMenuList.innerHTML = `<li class="placeholder">Bu menü tipi için bugün yemek yok.</li>`;
+                }
+            } else if (foodMenuData.normalMenu && foodMenuData.normalMenu.length > 0 && foodMenuData.normalMenu[0].name) {
+                ELEMENTS.foodMenuList.innerHTML = `<li class="placeholder">${foodMenuData.normalMenu[0].name}</li>`;
+                 setTextContent(ELEMENTS.foodMenuTitle, foodMenuData.dateLabel || "Menü Bilgisi"); 
+            } else { 
+                ELEMENTS.foodMenuList.innerHTML = `<li class="placeholder">${defaultErrorMsg}</li>`;
+                setTextContent(ELEMENTS.foodMenuTitle, menuDatePart ? `${menuDatePart} ${menuTypeLabel} Menüsü` : "Menü Bilgisi Yok");
+            }
+        } else { 
+            setTextContent(ELEMENTS.foodMenuTitle, "Yemek Menüsü");
+            ELEMENTS.foodMenuList.innerHTML = `<li class="placeholder">${loadingMsg}</li>`;
+        }
+    }
+
+    // ... (updatePopupWithData, loadAndDisplayStudentInfo ve diğer fonksiyonlar aynı) ...
+    // loadAndDisplayStudentInfo içinde currentPreferredMenuType ve updatePopupWithData çağrısı doğru.
+    // toggleFoodMenuTypeBtn listener'ı da doğru.
+
       function updatePopupWithData(profile, gno, balance, foodMenu) { 
         console.log("Popup updatePopupWithData - foodMenu:", JSON.stringify(foodMenu, null, 2));// YENİ: foodMenu parametresi
         // ... (profil, gno, bakiye gösterme aynı) ...
@@ -165,6 +274,8 @@ function $(id) { return document.getElementById(id); } // Basit bir yardımcı
                 ELEMENTS.foodMenuList.innerHTML = `<li class="placeholder">${loadingMsg}</li>`;
             }
         }
+        console.log("updatePopupWithData içinde currentPreferredMenuType:", currentPreferredMenuType); // LOG 2
+        renderFoodMenu(foodMenu, currentPreferredMenuType);
     }
 
   function loadAndDisplayStudentInfo() {
@@ -179,7 +290,8 @@ function $(id) { return document.getElementById(id); } // Basit bir yardımcı
                 ); 
                 return; 
             }
-            
+            currentPreferredMenuType = storedData[STORAGE_KEYS.PREFERRED_MENU_TYPE] || 'normal'; // Kayıtlı tercihi yükle
+             console.log("loadAndDisplay: Depodan okunan tercih:", currentPreferredMenuType); // LOG 3
             updatePopupWithData(
                 storedData[STORAGE_KEYS.STUDENT_PROFILE], 
                 storedData[STORAGE_KEYS.STUDENT_GNO], 
@@ -331,6 +443,50 @@ function $(id) { return document.getElementById(id); } // Basit bir yardımcı
             });
         });
     }
+   // YEMEK MENÜSÜ TİPİ DEĞİŞTİRME BUTONU
+    if (ELEMENTS.toggleFoodMenuTypeBtn) {
+        console.log("toggleFoodMenuTypeBtn için listener ekleniyor. Element:", ELEMENTS.toggleFoodMenuTypeBtn); // LOG A
+        ELEMENTS.toggleFoodMenuTypeBtn.addEventListener("click", () => {
+            console.log("toggleFoodMenuTypeBtn tıklandı! Event listener içi."); // LOG B
+            console.log("Tıklama öncesi currentPreferredMenuType:", currentPreferredMenuType); // LOG C
+
+            currentPreferredMenuType = (currentPreferredMenuType === 'normal') ? 'diet' : 'normal';
+            console.log("Tıklama sonrası YENİ currentPreferredMenuType:", currentPreferredMenuType); // LOG D
+            
+            chrome.storage.local.set({ [STORAGE_KEYS.PREFERRED_MENU_TYPE]: currentPreferredMenuType }, () => {
+                if(chrome.runtime.lastError) {
+                    console.error("Tercih kaydedilirken hata:", chrome.runtime.lastError.message);
+                } else {
+                    console.log("Tercih başarıyla kaydedildi:", currentPreferredMenuType); // LOG E
+                }
+            });
+            
+            // Depodan foodMenu verisini çek ve yeniden render et
+            chrome.storage.local.get(STORAGE_KEYS.FOOD_MENU, (data) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Menü verisi toggle sırasında depodan okunurken hata:", chrome.runtime.lastError.message);
+                    return;
+                }
+                console.log("Toggle sonrası depodan okunan foodMenu:", data ? data[STORAGE_KEYS.FOOD_MENU] : 'veri yok'); // LOG F
+                if (data && data[STORAGE_KEYS.FOOD_MENU]) {
+                    renderFoodMenu(data[STORAGE_KEYS.FOOD_MENU], currentPreferredMenuType);
+                } else {
+                    console.warn("Toggle sonrası render için foodMenu depoda bulunamadı veya boş.");
+                     // Belki varsayılan bir menü göstermek veya hata mesajı vermek
+                    renderFoodMenu({ 
+                        dateLabel: ELEMENTS.foodMenuTitle ? ELEMENTS.foodMenuTitle.textContent : "Menü", 
+                        normalMenu: [], 
+                        dietMenu: [], 
+                        hasMenu: false 
+                    }, currentPreferredMenuType);
+                }
+            });
+        });
+    } else {
+        console.error("toggleFoodMenuTypeBtn elementi DOM'da bulunamadı!");
+    }
+
+
 
     function setupToggle(checkboxId, storageKey, messageAction, reloadPageOnChange = false) {
         const checkboxElement = document.getElementById(checkboxId);

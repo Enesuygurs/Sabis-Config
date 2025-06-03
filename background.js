@@ -66,7 +66,9 @@ async function fetchViaAPIAndParseViaOffscreen(url, method = 'GET', body = null,
             return null;
         }
         const htmlText = await response.text();
-        // if (url === FOOD_MENU_API_URL) console.log(`BG: ${url} için API yanıtı (ham):\n`, htmlText.substring(0, 500));
+         if (url === FOOD_MENU_API_URL) { // Sadece yemek menüsü API'si için logla
+             console.log("BG: Yemek Menüsü API Yanıtı (HAM):\n", htmlText); // Tamamını logla veya büyük bir kısmını
+        }
 
         return await chrome.runtime.sendMessage({ 
             action: parseAction, 

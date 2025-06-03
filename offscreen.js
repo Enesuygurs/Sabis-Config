@@ -268,6 +268,10 @@ if (window.location.href.startsWith(FOOD_MENU_URL_CONTENT)) {
 
 // ... (extractStudentInfoFromDOM, extractGNOFromDOM, extractBalanceFromDOM fonksiyonları aynı) ...
 
+// offscreen.js
+
+// ... (extractStudentInfoFromDOM, extractGNOFromDOM, extractBalanceFromDOM fonksiyonları aynı) ...
+
 function extractFoodMenuFromAPIResponse(htmlText) {
     if (!htmlText) return { dateLabel: "API yanıtı boş", normalMenu: [], dietMenu: [], hasMenu: false };
     
@@ -275,84 +279,81 @@ function extractFoodMenuFromAPIResponse(htmlText) {
     const doc = parser.parseFromString(htmlText, "text/html");
 
     const menuData = {
-        // dateLabel: "", // Tarih bilgisi artık background.js'den payload ile gönderilen olacak.
-                       // API yanıtında tarih etiketi varsa onu da alabiliriz ama BG'den gelen daha güvenilir.
         normalMenu: [],
         dietMenu: [], 
-        hasMenu: false
+        hasMenu: false // Başlangıçta false, en az bir yemek bulunursa true olacak
+        // dateLabel'ı burada set etmiyoruz, background.js bunu yönetecek.
     };
 
-    // API yanıtındaki HTML'in yapısına göre seçiciler:
-    // Verdiğin yanıtta ".carousel-item.active" içindeki ".normalmenu" ve ".diyetmenu" yapısı var gibi.
-    // Eğer API doğrudan sadece yemek listesini (örn: sadece <ul><li>...</li></ul>) dönüyorsa,
-    // seçicileri ona göre basitleştirmek gerekir.
-    // Konsol çıktısındaki HTML'e göre güncelleyelim:
-    
     // Normal menü
-    const normalMenuContainer = doc.querySelector(".normalmenu .list-group, #normalMenuCarousel .list-group"); // İki olası seçici
+    const normalMenuContainer = doc.querySelector(".normalmenu .list-group, #normalMenuCarousel .list-group");
     if (normalMenuContainer) {
-        normalMenuContainer.querySelectorAll("li.list-group-item").forEach(item => {
-            menuData.hasMenu = true; // En az bir menü bulundu
-            const foodNameFull = item.textContent.trim();
-            let foodName = foodNameFull.split(" <small")[0]; // Kalori kısmını ayır
-            const calorieSmall = item.querySelector("small");
-            let calorieText = "0";
-
-            if (calorieSmall) {
-                calorieText = calorieSmall.textContent.trim().replace(/-/g, "").replace("kcal", "").trim();
-            } else {
-                // Alternatif kalori bulma (eğer <small> yoksa)
-                const calorieMatch = foodNameFull.match(/\s-\s*(\d+)\s*kcal/i);
-                if (calorieMatch && calorieMatch[1]) {
-                    calorieText = calorieMatch[1];
-                    foodName = foodNameFull.substring(0, foodNameFull.indexOf(calorieMatch[0])).trim(); // Kaloriyi isimden çıkar
+        const normalItems = normalMenuContainer.querySelectorAll("li.list-group-item");
+        if (normalItems.length > 0) {
+            menuData.hasMenu = true;
+            normalItems.forEach(item => {
+                const foodNameFull = item.textContent.trim();
+                let foodName = foodNameFull.split(" <small")[0]; 
+                const calorieSmall = item.querySelector("small");
+                let calorieText = "0";
+                if (calorieSmall) {
+                    calorieText = calorieSmall.textContent.trim().replace(/-/g, "").replace("kcal", "").trim();
+                } else {
+                    const calorieMatch = foodNameFull.match(/\s-\s*(\d+)\s*kcal/i);
+                    if (calorieMatch && calorieMatch[1]) {
+                        calorieText = calorieMatch[1];
+                        foodName = foodNameFull.substring(0, foodNameFull.indexOf(calorieMatch[0])).trim();
+                    }
                 }
-            }
-            menuData.normalMenu.push({ name: foodName.trim(), calorie: calorieText });
-        });
+                if (foodName) menuData.normalMenu.push({ name: foodName.trim(), calorie: calorieText });
+            });
+        }
     }
 
-    // Diyet menüsü (eğer varsa ve farklı bir class ile ayrılmışsa)
-    const dietMenuContainer = doc.querySelector(".diyetmenu .list-group");
-    if (dietMenuContainer && dietMenuContainer.offsetParent !== null) { // Sadece görünürse al
-        dietMenuContainer.querySelectorAll("li.list-group-item").forEach(item => {
-            menuData.hasMenu = true; // En az bir menü bulundu
-            const foodNameFull = item.textContent.trim();
-            let foodName = foodNameFull.split(" <small")[0];
-            const calorieSmall = item.querySelector("small");
-            let calorieText = "0";
-
-            if (calorieSmall) {
-                calorieText = calorieSmall.textContent.trim().replace(/-/g, "").replace("kcal", "").trim();
-            } else {
-                const calorieMatch = foodNameFull.match(/\s-\s*(\d+)\s*kcal/i);
-                if (calorieMatch && calorieMatch[1]) {
-                    calorieText = calorieMatch[1];
-                    foodName = foodNameFull.substring(0, foodNameFull.indexOf(calorieMatch[0])).trim();
+    // Diyet menüsü
+    const dietMenuContainer = doc.querySelector(".diyetmenu .list-group"); // Doğrudan seçici
+    if (dietMenuContainer) {
+        const dietItems = dietMenuContainer.querySelectorAll("li.list-group-item");
+        if (dietItems.length > 0) {
+            menuData.hasMenu = true; // Eğer diyet menüsünde yemek varsa genel menü var demektir.
+            dietItems.forEach(item => {
+                const foodNameFull = item.textContent.trim();
+                let foodName = foodNameFull.split(" <small")[0];
+                const calorieSmall = item.querySelector("small");
+                let calorieText = "0";
+                if (calorieSmall) {
+                    calorieText = calorieSmall.textContent.trim().replace(/-/g, "").replace("kcal", "").trim();
+                } else {
+                    const calorieMatch = foodNameFull.match(/\s-\s*(\d+)\s*kcal/i);
+                    if (calorieMatch && calorieMatch[1]) {
+                        calorieText = calorieMatch[1];
+                        foodName = foodNameFull.substring(0, foodNameFull.indexOf(calorieMatch[0])).trim();
+                    }
                 }
-            }
-            menuData.dietMenu.push({ name: foodName.trim(), calorie: calorieText });
-        });
+                if (foodName) menuData.dietMenu.push({ name: foodName.trim(), calorie: calorieText });
+            });
+        }
     }
 
+    // Eğer hiçbir menüde (normal veya diyet) öğe bulunamadıysa ama API'den bir şeyler döndüyse,
+    // bu bir "menü yok" mesajı olabilir.
     if (!menuData.hasMenu && doc.body) {
-        // API yanıtında menü yoksa, body içindeki bir mesajı ara
         const message = doc.body.textContent.trim();
-        if (message && (message.includes("bulunmamaktadır") || message.includes("yoktur") || message.length < 100)) { // Kısa mesajlar genellikle hata/bilgi mesajıdır
+        if (message && (message.includes("bulunmamaktadır") || message.includes("yoktur") || message.length < 200)) { // Daha uzun mesajlar HTML olabilir
             menuData.normalMenu.push({ name: message, calorie: "" });
+            // Bu durumda hasMenu false kalabilir, çünkü bu bir yemek listesi değil.
         } else if (htmlText.trim() === "" || htmlText.trim() === "[]" || htmlText.trim() === "{}") {
             menuData.normalMenu.push({ name: "Menü bulunamadı (Boş API yanıtı)", calorie: "" });
-        } else {
-            // console.warn("Offscreen (API): Menü öğesi parse edilemedi, ancak yanıt boş değil. Dönen HTML:", htmlText.substring(0,300));
-            menuData.normalMenu.push({ name: "Menü verisi işlenemedi.", calorie: "" });
+        } else if (menuData.normalMenu.length === 0 && menuData.dietMenu.length === 0) { // Hiçbir şey parse edilemediyse
+             menuData.normalMenu.push({ name: "Menü verisi işlenemedi.", calorie: "" });
         }
     }
     
-    // dateLabel'ı burada set etmeye gerek yok, background.js'den gelen payload'daki tarih bilgisi kullanılacak.
     // console.log("Offscreen extractFoodMenuFromAPIResponse result:", JSON.stringify(menuData, null, 2));
     return menuData;
 }
 
+// ... (diğer chrome.runtime.onMessage listener'ları aynı) ...
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     if (request.action === "parseHtmlForProfile") {
