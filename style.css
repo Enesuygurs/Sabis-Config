@@ -164,20 +164,40 @@ h1#headerTitle {
 .btn-small { padding: 6px 10px !important; font-size: 12px !important; gap: 6px !important; }
 .btn-small svg { width: 13px !important; height: 13px !important; margin-right: 4px !important; }
 
-
+.food-menu-header {
+    display: flex; /* Başlık/ikon ve değiştirme butonu yan yana */
+    align-items: center;
+    justify-content: space-between; /* Aralarına boşluk bırak */
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+    margin-bottom: 5px;
+}
+.food-menu-header-main { /* Başlık ve yemek ikonunu gruplar */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 .food-menu-card { display: flex; flex-direction: column; gap: 8px; }
-.food-menu-header { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 5px; }
 .food-menu-icon { color: #fd7e14; flex-shrink: 0; }
-.food-menu-title { font-size: 15px; font-weight: 600; color: #333; margin: 0; }
-.food-menu-list { list-style: none; padding-left: 5px; margin: 0; font-size: 13px; color: #555; max-height: 100px; overflow-y: auto; }
+.food-menu-list { list-style: none; padding-left: 5px; margin: 0; font-size: 13px; color: #555; max-height: fit-content; overflow-y: auto; }
 .food-menu-list li { padding: 3px 0; border-bottom: 1px dashed #eee; }
 .food-menu-list li:last-child { border-bottom: none; }
 .food-menu-list .food-calorie { font-size: 0.8em; color: #888; margin-left: 5px; }
 .food-menu-list .placeholder { color: #999; font-style: italic; }
 .food-menu-link { font-size: 11px; color: #007bff; text-decoration: none; align-self: flex-end; margin-top: 5px; }
 .food-menu-link:hover { text-decoration: underline; }
-
-
+.btn-food-menu-toggle svg {
+    width: 16px; /* İkon boyutu */
+    height: 16px;
+}
+.food-menu-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    /* text-align: left;  Artık space-between ile hizalanacak */
+    /* flex-grow: 1;  BU DA KALDIRILABİLİR */
+}
 /* Ayarlar Bölümü İçeriği (settingsContent içindeki) */
 #settingsContent .button-group {
     display: grid; /* Bu zaten vardı, kalsın */

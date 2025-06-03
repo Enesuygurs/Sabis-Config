@@ -64,7 +64,7 @@ function enableStealthMode() {
     };
     for (const selector in selectorsAndText) {
         document.querySelectorAll(selector).forEach(el => {
-            el.style.setProperty("color", "#b9b9b9", "important");
+            el.style.setProperty("color", "white", "important");
             el.style.setProperty("font-weight", "bold", "important");
             el.innerText = selectorsAndText[selector];
         });
