@@ -16,7 +16,7 @@ function manageTheme(themeName, cssFileName, enable) {
             linkElement.id = themeId;
             linkElement.rel = "stylesheet";
             linkElement.type = "text/css";
-            linkElement.href = chrome.runtime.getURL(`themes/${cssFileName}`);
+            linkElement.href = chrome.runtime.getURL(`assets/themes/${cssFileName}`);
             document.head.appendChild(linkElement);
         }
     } else if (linkElement) {
@@ -25,7 +25,7 @@ function manageTheme(themeName, cssFileName, enable) {
 }
 
 function enableStealthMode() {
-    const avatarUrl = chrome.runtime.getURL("images/avatar.png");
+    const avatarUrl = chrome.runtime.getURL("assets/images/avatar.png");
 
     document.querySelectorAll(".symbol-label img, .symbol.symbol-35.symbol-light-success img")
         .forEach(img => {
@@ -50,12 +50,12 @@ function enableStealthMode() {
 
     const selectorsAndText = {
         ".card-title.font-weight-bolder.text-dark-75.text-hover-primary.font-size-h4.m-0.pt-7.pb-1": "Anonymous",
-        ".font-weight-bold.text-dark-50.font-size-sm.pb-6": "Stealth Mode ON",
+        ".font-weight-bold.text-dark-50.font-size-sm.pb-6": "Sabis Config",
         ".text-dark-50.font-weight-bolder.font-size-base.d-none.d-md-inline.mr-3": "Anonymous"
     };
     for (const selector in selectorsAndText) {
         document.querySelectorAll(selector).forEach(el => {
-            el.style.setProperty("color", "white", "important");
+            el.style.setProperty("color", "#898989", "important");
             el.style.setProperty("font-weight", "bold", "important");
             el.innerText = selectorsAndText[selector];
         });
