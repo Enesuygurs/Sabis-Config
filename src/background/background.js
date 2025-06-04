@@ -2,7 +2,7 @@ const STUDENT_PROFILE_URL = "https://obs.sabis.sakarya.edu.tr/";
 const TRANSCRIPT_URL = "https://obs.sabis.sakarya.edu.tr/Transkript";
 const CARD_BALANCE_URL = "https://obs.sabis.sakarya.edu.tr/Kart/Bakiye";
 const FOOD_MENU_API_URL = "https://menu.sabis.sakarya.edu.tr/Home/GetirGunlukMenu";
-const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('offscreen.html');
+const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('src/offscreen/offscreen.html');
 
 let creatingOffscreenPromise = null;
 
@@ -106,7 +106,7 @@ async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, met
             (dataToStore.number === 'N/A' || dataToStore.number === undefined)) {
             const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
             if (oldProfile?.name && oldProfile.name !== 'N/A' && oldProfile.name !== "Giriş Yapılmamış") {
-                const girişYapılmamışProfile = { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'images/avatar.png' };
+                const girişYapılmamışProfile = { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'assets/images/avatar.png' };
                 await chrome.storage.local.set({ [storageKey]: girişYapılmamışProfile });
                 return girişYapılmamışProfile;
             }
@@ -120,7 +120,7 @@ async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, met
 }
 
 async function updateStudentData() {
-    const profileDefault = { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'images/avatar.png' };
+    const profileDefault = { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'assets/images/avatar.png' };
     const gnoDefault = 'N/A';
     const balanceDefault = 'N/A';
 
