@@ -134,8 +134,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse(extractFoodMenuFromAPIResponse(request.htmlContent));
             break;
         default:
-            // İsteğe bağlı: Bilinmeyen eylemler için bir yanıt gönderebilir veya loglayabilirsiniz.
-            // sendResponse({ status: "unknown_action" });
             break;
     }
     return true;

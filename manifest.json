@@ -1,48 +1,38 @@
 {
-    "manifest_version": 3,
-    "name": "SABİS Config",
-    "version": "1.0",
-    "description": "SABİS Config by Enes Uygur",
-    "permissions": [
-        "activeTab",
-        "scripting",
-        "tabs",
-        "storage",
-        "offscreen"
-    ],
-    "background": {
-        "service_worker": "background.js"
-    },
-    "content_scripts": [
-        {
-            "matches": ["*://*.sakarya.edu.tr/*"],
-            "js": ["content.js"]
-        }
-    ],
-    "host_permissions": [
-        "https://*.sakarya.edu.tr/*",
-        "http://*.sakarya.edu.tr/*",
-        "https://menu.sabis.sakarya.edu.tr/*"
-    ],
-    "icons": {
-        "16": "images/icon16.png",
-        "48": "images/icon48.png"
-    },
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "images/icon16.png",
-            "48": "images/icon48.png"
-        }
-    },
-     "web_accessible_resources": [ 
-        {
-            "resources": [
-                "themes/red.css",
-                "themes/dark.css",
-                "images/avatar.png"
-            ],
-            "matches": ["*://*.sakarya.edu.tr/*"] 
-        }
-    ]
+  "manifest_version": 3,
+  "name": "SABİS Config",
+  "version": "1.0",
+  "description": "SABİS Config by Enes Uygur",
+  "permissions": ["activeTab", "scripting", "tabs", "storage", "offscreen"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.sakarya.edu.tr/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "host_permissions": [
+    "https://*.sakarya.edu.tr/*",
+    "http://*.sakarya.edu.tr/*",
+    "https://menu.sabis.sakarya.edu.tr/*"
+  ],
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["themes/red.css", "themes/dark.css", "images/avatar.png"],
+      "matches": ["*://*.sakarya.edu.tr/*"]
+    }
+  ]
 }
