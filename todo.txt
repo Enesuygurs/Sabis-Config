@@ -1,1 +1,6 @@
-2. Kod düzenlemeleri yaptırılacak.
+1. Kod düzenlemeleri yaptırılacak.
+2. Bakiye yükle sadece site yönlendirmesi yapacak.
+3. Created by üstüne Github linki koyulacak. (Güncellemeler ve Bağışlar)
+4. Stealth Mode ON Yazısı değiştirilecek.
+5. Saü yerlere sabis yazılacak.
+6. ayrıntılı manifest dosyası düzenlenecek.
