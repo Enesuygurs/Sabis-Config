@@ -4,3 +4,4 @@
 4. Stealth Mode ON Yazısı değiştirilecek.
 5. Saü yerlere sabis yazılacak.
 6. ayrıntılı manifest dosyası düzenlenecek.
+7. Alert notification?

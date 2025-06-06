@@ -229,17 +229,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     ELEMENTS.loadBalanceBtn?.addEventListener("click", () => {
-        const amounts = ["30", "50", "100", "200", "500"];
-        const selectedAmount = prompt(`Yüklenecek tutarı seçin veya girin (${amounts.join(', ')} TL):`, "50");
-        if (selectedAmount !== null) {
-            const amount = parseInt(selectedAmount);
-            if (!isNaN(amount) && amount > 0) {
-                navigateSabisTabOrNew("https://obs.sabis.sakarya.edu.tr/Kart/Bakiye");
-            } else {
-                alert("Geçerli bir tutar giriniz.");
-            }
+        navigateSabisTabOrNew("https://obs.sabis.sakarya.edu.tr/Kart/Bakiye");
         }
-    });
+    );
 
     ELEMENTS.goToExamScheduleBtn?.addEventListener("click", () => navigateSabisTabOrNew("https://obs.sabis.sakarya.edu.tr/Sinav/Takvim"));
 
@@ -254,8 +246,7 @@ document.addEventListener("DOMContentLoaded", function () {
                  }
                 chrome.scripting.executeScript({ target: { tabId: tab.id }, func: scriptFunc, args: args });
             } else {
-                // Opsiyonel: Kullanıcıyı bilgilendirmek için alert eklenebilir.
-                // alert("Bu işlemi gerçekleştirmek için aktif bir SABİS sekmesi bulunmalıdır.");
+                alert("Bu işlemi gerçekleştirmek için aktif bir SABİS sekmesi bulunmalıdır.");
             }
         });
     }
