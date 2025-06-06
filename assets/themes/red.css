@@ -643,3 +643,7 @@ div[class*="d-flex justify-content-between"]
   font-weight: 600;
   font-size: 14px;
 }
+
+.wave:after {
+  display: none;
+}
