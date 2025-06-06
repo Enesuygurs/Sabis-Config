@@ -647,3 +647,15 @@ div[class*="d-flex justify-content-between"]
 .wave:after {
   display: none;
 }
+
+.bg-diagonal-light-warning:before {
+    background-color: #631515 !important;
+}
+
+.card-body > .d-flex > .d-flex > span.h4.text-dark.mb-5 {
+    color: #c1bbbb !important;
+}
+
+.card-body > .d-flex > .d-flex > p.text-dark-50 {
+    color: #c1bbbb;
+}

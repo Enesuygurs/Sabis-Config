@@ -460,6 +460,7 @@ input:checked + .slider:before {
 
 /* 9. Footer */
 .footer {
+  display: grid;
   text-align: center;
   font-size: 11px;
   color: #868e96;
@@ -467,4 +468,9 @@ input:checked + .slider:before {
   border-top: 1px solid #e0e0e0;
   margin-top: auto;
   width: 100%;
+}
+
+.link {
+  color: #007bff;
+  text-decoration: none;
 }

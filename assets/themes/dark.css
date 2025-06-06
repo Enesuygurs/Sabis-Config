@@ -157,10 +157,10 @@ body {
   color: #707070;
 }
 .navi.navi-hover .navi-item .navi-link:hover {
-  background-color: #111111;
+  background-color: #111111 !important;
 }
 .navi.navi-active .navi-item .navi-link.active {
-  background-color: #111111;
+  background-color: #111111 !important;
 }
 .alert.alert-custom.alert-outline-primary.fade.show.mb-5 {
   background-color: #101010 !important;
@@ -482,4 +482,32 @@ div[class*="d-flex justify-content-between"]
 
 .wave:after {
   display: none;
+}
+
+.bg-diagonal-light-warning:before {
+    background-color: #1a5189;
+}
+
+.bg-diagonal:after {
+    background-color: #1a1a1a;
+}
+
+.card-body > .d-flex > .d-flex > span.h4.text-dark.mb-5 {
+color: #414141 !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #121212 !important;
+}
+
+tr[style="background-color:#d8dcf1;"] {
+  background-color: #121212 !important;
+}
+
+table[class*="table "] > tbody > tr[style*="background-color:white"] {
+    background: #121212 !important;
+}
+
+table tbody tr td span[style*="color:black"] {
+    color: white !important;
 }
