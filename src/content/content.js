@@ -177,7 +177,10 @@ function processGradeTable(table) {
         const newAverageRow = document.createElement("tr");
         const isDetailPage = !!table.closest("#icerik");
         newAverageRow.innerHTML = `<td></td><td class="font-weight-bold">Ortalama</td>${isDetailPage ? '<td></td>' : ''}<td class="text-right font-weight-bold"><span id="notOrtalama" data-calculated-score="true" style="color: #000">${formattedTotal}</span></td>`;
-        const referenceKeywords = ["Anket", "Bütünleme Başvurusu", "İş Sağlığı ve Güvenliği", "Devam Durumu"];
+        
+        // DÜZENLEME: "İş Sağlığı ve Güvenliği" satırı, ortalamanın hesaplanacağı son satır olarak algılanmaması için listeden çıkarıldı.
+        const referenceKeywords = ["Anket", "Bütünleme Başvurusu", "Devam Durumu"];
+        
         const referenceNode = currentRows.find(r =>
             referenceKeywords.some(text => r.querySelector("td:nth-child(2)")?.textContent.includes(text) || (r.querySelector("td:nth-child(3)") || r.querySelector("td:nth-child(4)"))?.textContent.includes(text))
         );
@@ -187,12 +190,16 @@ function processGradeTable(table) {
 
 function enableCalculateGrade() {
     if (!window.location.href.startsWith(SABIS_DERS_URL_PREFIX)) return;
+    
     const tablesToProcess = [];
-    const urlPath = new URL(window.location.href).pathname;
+    const url = new URL(window.location.href);
+    const urlPath = url.pathname;
+    const urlHash = url.hash;
 
     if (urlPath === "/Ders" || /^\/Ders\/\d{4}\/\d{1}$/.test(urlPath)) {
         document.querySelectorAll(".card-body table").forEach(table => tablesToProcess.push(table));
-    } else if (urlPath.startsWith("/Ders/Grup/")) {
+    } 
+    else if (urlPath.startsWith("/Ders/Grup/") && urlHash === '#Not') {
         const table = document.querySelector("#icerik div.card > div.card-body > table.table");
         if (table) tablesToProcess.push(table);
     }
@@ -213,7 +220,7 @@ function initGradeClickHandlers() {
         const labelCellInRow = row?.querySelector("td:nth-child(2)");
         if (labelCellInRow && (labelCellInRow.textContent.includes("Başarı Notu") || labelCellInRow.textContent.includes("Ortalama"))) return;
 
-        const gradeSpan = originalSpan.cloneNode(true); // Event listener'ları temizlemek için
+        const gradeSpan = originalSpan.cloneNode(true); 
         originalSpan.parentNode.replaceChild(gradeSpan, originalSpan);
 
         gradeSpan.style.cursor = "pointer";
@@ -246,7 +253,7 @@ function initGradeClickHandlers() {
                 const gradeNumber = parseInt(newGradePrompt);
                 if (isNaN(gradeNumber) || gradeNumber < 0 || gradeNumber > 100) {
                     alert("Geçerli bir not giriniz! (0-100)");
-                    gradeSpan.textContent = originalTextOnClick; // Eski haline getir
+                    gradeSpan.textContent = originalTextOnClick; 
                     return;
                 }
                 gradeSpan.textContent = gradeNumber.toString();
@@ -290,7 +297,7 @@ function runOrClearGradeLogic(calculateEnabled) {
                 row.remove();
             }
         });
-        initGradeClickHandlers(); // Tıklanabilirlik ve "-" için yine de çağır
+        initGradeClickHandlers(); 
     }
 }
 
@@ -316,8 +323,6 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         }
         if (changes[STORAGE_KEYS.STEALTH] !== undefined) {
             // Stealth modu popup.js tarafından sayfa yenileme ile yönetiliyor.
-            // Anında değişiklik istenirse:
-            // changes[STORAGE_KEYS.STEALTH].newValue ? enableStealthMode() : window.location.reload();
         }
         if (changes[STORAGE_KEYS.CALCULATE] !== undefined) {
             runOrClearGradeLogic(!!changes[STORAGE_KEYS.CALCULATE].newValue);
@@ -325,10 +330,14 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
-if (window.location.href.includes("/Ders/Grup/")) {
+if (window.location.pathname.startsWith("/Ders/Grup/")) {
     const targetNode = document.getElementById('icerik');
     if (targetNode) {
         const observer = new MutationObserver(mutations => {
+            if (window.location.hash !== '#Not') {
+                return; 
+            }
+
             const tableAdded = mutations.some(m =>
                 m.type === 'childList' &&
                 Array.from(m.addedNodes).some(n =>
@@ -336,7 +345,7 @@ if (window.location.href.includes("/Ders/Grup/")) {
                 )
             );
             if (tableAdded) {
-                setTimeout(() => { // DOM güncellemelerinin oturması için kısa bir bekleme
+                setTimeout(() => {
                     chrome.storage.local.get([STORAGE_KEYS.CALCULATE], data => {
                         if (!chrome.runtime.lastError) runOrClearGradeLogic(!!data[STORAGE_KEYS.CALCULATE]);
                     });
@@ -369,5 +378,5 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             sendResponse({status: "unknown_action"});
             break;
     }
-    return true; // Asenkron yanıtlar için veya gelecekteki mesajlar için.
+    return true;
 });
