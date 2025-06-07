@@ -1,5 +1,2 @@
 1. Kod düzenlemeleri yaptırılacak.
 6. ayrıntılı manifest dosyası düzenlenecek.
-7. Alert notification?
-8. https://obs.sabis.sakarya.edu.tr/Ders/Grup/703016#Odev da ortalama hesaplıyor?
-sanal sınıflarda da hesaplıyor?

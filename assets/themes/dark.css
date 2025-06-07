@@ -165,9 +165,7 @@ body {
 .alert.alert-custom.alert-outline-primary.fade.show.mb-5 {
   background-color: #101010 !important;
 }
-[class*="text-right"] > span {
-  font-weight: bold;
-}
+
 .form-control {
   border: 2px solid #1e1e1e;
 }
