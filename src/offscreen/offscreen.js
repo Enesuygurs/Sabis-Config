@@ -111,7 +111,7 @@ function extractFoodMenuFromAPIResponse(htmlText) {
         if (message && (message.includes("bulunmamaktadır") || message.includes("yoktur") || message.length < 200)) {
             menuData.normalMenu.push({ name: message, calorie: "" });
         } else if (htmlText.trim() === "" || htmlText.trim() === "[]" || htmlText.trim() === "{}") {
-            menuData.normalMenu.push({ name: "Menü bulunamadı (Boş API yanıtı)", calorie: "" });
+            menuData.normalMenu.push({ name: "Menü bulunamadı.", calorie: "" });
         } else if (menuData.normalMenu.length === 0 && menuData.dietMenu.length === 0) {
             menuData.normalMenu.push({ name: "Menü verisi işlenemedi.", calorie: "" });
         }

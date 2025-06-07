@@ -126,7 +126,7 @@ async function updateStudentData() {
 
     const today = new Date();
     const options = { weekday: 'long', day: 'numeric', month: 'long' };
-    const formattedDateForMenu = today.toLocaleDateString('tr-TR', options) + " Menüsü";
+    const formattedDateForMenu = today.toLocaleDateString('tr-TR', options);
     // foodMenu için varsayılan değerin artık dateLabel içermemesine dikkat, o parseAction'dan geliyor.
     // Ancak parseAction hata döndürürse, dateLabel'ı biz ekleyeceğiz.
     const foodMenuParseDefault = { normalMenu: [], dietMenu: [], hasMenu: false };
