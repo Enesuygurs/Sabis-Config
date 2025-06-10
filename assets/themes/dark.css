@@ -509,3 +509,11 @@ table[class*="table "] > tbody > tr[style*="background-color:white"] {
 table tbody tr td span[style*="color:black"] {
     color: white !important;
 }
+
+table > tfoot > tr[style*="background-color:#f9f9f9 !important;"] > td {
+    background-color: #000000f0 !important;
+}
+
+tr > td[style*="background-color: #f9f9f9;"], tr > td[style*="background-color:#f9f9f9;"]{
+    background-color: #0f0f0f !important;
+}
