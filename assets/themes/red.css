@@ -12,7 +12,7 @@
   ):not(.menu-item-active):hover
   .menu-link
   .menu-text {
-  color: #df1212 !important;
+  color: #bd0000 !important;
 }
 .text-right {
   text-align: right !important;
@@ -52,7 +52,7 @@ a.text-primary:focus {
   color: #2a2a2a;
 }
 .navi .navi-item .navi-link.active .navi-text {
-  color: #df1212 !important;
+  color: #bd0000 !important;
 }
 .symbol.symbol-light-primary .symbol-label {
   background-color: #ffe1e1;
@@ -76,7 +76,7 @@ a.text-primary:focus {
   ):not(.menu-item-active):hover
   > .menu-link
   .menu-icon {
-  color: #df1212 !important;
+  color: #bd0000 !important;
 }
 .table th,
 .table td {
@@ -95,7 +95,7 @@ a.text-primary:focus {
   }
 }
 .navi .navi-item .navi-link:hover .navi-text {
-  color: #df1212 !important;
+  color: #bd0000 !important;
 }
 .topbar .btn.btn-icon:active,
 .topbar .btn.btn-icon.active,
@@ -134,10 +134,10 @@ a.text-hover-primary:hover,
   border-color: transparent;
 }
 .navi .navi-item .navi-link.active .navi-icon i {
-  color: #df1212;
+  color: #bd0000;
 }
 .navi .navi-item .navi-link:hover .navi-icon i {
-  color: #df1212;
+  color: #bd0000;
 }
 a {
   font-weight: 600;
@@ -529,7 +529,7 @@ td.fc-widget-content {
 }
 .table thead th,
 .table thead td {
-  border-bottom-width: 2px;
+  border-bottom-width: 1px;
 }
 .fc-unthemed th.fc-day-header > a,
 .fc-unthemed th.fc-day-header > span {
