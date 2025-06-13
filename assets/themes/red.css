@@ -24,7 +24,7 @@
 }
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-heading .menu-text,
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-link .menu-text {
-  color: #df1212 !important;
+  color: #bd0000 !important;
 }
 .aside-menu .menu-nav > .menu-item > .menu-heading .menu-text,
 .aside-menu .menu-nav > .menu-item > .menu-link .menu-text {
@@ -60,7 +60,7 @@ a.text-primary:focus {
 }
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-heading .menu-icon,
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-link .menu-icon {
-  color: #df1212;
+  color: #bd0000;
 }
 .aside-menu
   .menu-nav
