@@ -13,11 +13,7 @@
       "js": ["src/content/content.js"]
     }
   ],
-  "host_permissions": [
-    "https://*.sakarya.edu.tr/*",
-    "http://*.sakarya.edu.tr/*",
-    "https://menu.sabis.sakarya.edu.tr/*"
-  ],
+ "host_permissions": ["*://*.sakarya.edu.tr/*"],
   "icons": {
     "16": "assets/images/icon16.png",
     "48": "assets/images/icon48.png"

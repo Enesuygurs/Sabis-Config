@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
         setProfileField(ELEMENTS.studentNumber, 'Yükleniyor...');
         setTextContent(ELEMENTS.studentGNO, 'Yükleniyor...', 'GNO: ');
         setTextContent(ELEMENTS.studentBalance, 'Yükleniyor...'); // Prefix'i renderFoodMenu'da ele alalım
-        if (ELEMENTS.studentPhoto) ELEMENTS.studentPhoto.src = 'images/avatar.png';
+        if (ELEMENTS.studentPhoto) ELEMENTS.studentPhoto.src = '../../assets/images/avatar.png';
         setTextContent(ELEMENTS.foodMenuTitle, 'Bugünün Menüsü Yükleniyor...');
         if (ELEMENTS.foodMenuList) ELEMENTS.foodMenuList.innerHTML = '<li class="placeholder">Yükleniyor...</li>';
     }
@@ -157,14 +157,14 @@ document.addEventListener("DOMContentLoaded", function () {
             setProfileField(ELEMENTS.studentDepartment, departmentText);
             setProfileField(ELEMENTS.studentNumber, profile.number);
             if (ELEMENTS.studentPhoto) {
-                ELEMENTS.studentPhoto.src = (profile.imageUrl && profile.imageUrl !== 'images/avatar.png') ? profile.imageUrl : 'images/avatar.png';
-                ELEMENTS.studentPhoto.onerror = function() { this.src = 'images/avatar.png'; };
+                ELEMENTS.studentPhoto.src = (profile.imageUrl && profile.imageUrl !== '../../assets/images/avatar.png') ? profile.imageUrl : '../../assets/images/avatar.png';
+                ELEMENTS.studentPhoto.onerror = function() { this.src = '../../assets/images/avatar.png'; };
             }
         } else {
             setProfileField(ELEMENTS.studentName, 'Bilgi Yok');
             setProfileField(ELEMENTS.studentDepartment, 'Veri çekilemedi');
             setProfileField(ELEMENTS.studentNumber, '-');
-            if (ELEMENTS.studentPhoto) ELEMENTS.studentPhoto.src = 'images/avatar.png';
+            if (ELEMENTS.studentPhoto) ELEMENTS.studentPhoto.src = '../../assets/images/avatar.png';
         }
 
         setTextContent(ELEMENTS.studentGNO, (profile?.name === "Giriş Yapılmamış" ? '-' : gno), 'GNO: ');
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function loadAndDisplayStudentInfo() {
         displayLoadingState();
         chrome.storage.local.get(Object.values(STORAGE_KEYS), (storedData) => {
-            const defaultErrorProfile = { name: "Hata", department: "Hata", number: "-", imageUrl: 'images/avatar.png' };
+            const defaultErrorProfile = { name: "Hata", department: "Hata", number: "-", imageUrl: '../../assets/images/avatar.png' };
             const defaultErrorFoodMenu = { dateLabel: "Hata", normalMenu: [{ name: "Yüklenemedi", calorie: "" }], hasMenu: false };
 
             if (chrome.runtime.lastError) {
@@ -202,7 +202,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     updatePopupWithData(response.data.profile, response.data.gno, response.data.balance, response.data.foodMenu);
                 } else if (response?.status === "error" && noCachedData) {
                     updatePopupWithData(
-                        { name: "Veri Alınamadı", department: "-", number: "-", imageUrl: 'images/avatar.png' },
+                        { name: "Veri Alınamadı", department: "-", number: "-", imageUrl: '../../assets/images/avatar.png' },
                         "N/A", "N/A",
                         { dateLabel: "Veri Alınamadı", normalMenu: [{ name: "Yüklenemedi", calorie: "" }], hasMenu: false }
                     );
