@@ -110,7 +110,7 @@ function processGradeTable(table) {
 
     const currentRows = Array.from(tbody.querySelectorAll("tr"));
     let totalPoints = 0;
-    let hasMakeupExam = false; // Bütünleme kontrolü
+    let hasMakeupExam = false;
 
     currentRows.forEach(row => {
         const calismaTipiCell = row.querySelector("td:nth-child(2)");
@@ -126,32 +126,25 @@ function processGradeTable(table) {
         const calismaTipiCell = row.querySelector("td:nth-child(2)");
 
         if (!oranCell || !notCellSpan || !calismaTipiCell) return;
-
-        // Bütünleme varsa ve satır Final ise, bu notu atla
-        if (hasMakeupExam && calismaTipiCell.textContent.includes("Final")) {
-            return;
-        }
+        if (hasMakeupExam && calismaTipiCell.textContent.includes("Final")) return;
 
         const oranText = oranCell.textContent.trim().replace(",", ".");
         const oran = parseFloat(oranText);
-
         const notTextContent = getPrimaryTextContent(notCellSpan).split(" ")[0];
-        const not = getGradeValue(notTextContent); // Yeni fonksiyonu kullanıyoruz!
+        const not = getGradeValue(notTextContent);
 
-        // getGradeValue null dönmediyse (yani geçerli bir not ise) hesaplamaya kat
+        // Oranı 0 olan satırları (İSG gibi) hesaplamaya katma
         if (oran > 0 && not !== null) {
             const calculatedPoint = (oran * not) / 100;
             totalPoints += calculatedPoint;
 
-            // Alt puanı gösteren span'i oluştur
             const subScoreElement = document.createElement("span");
             subScoreElement.style.cssText = "color: rgb(52, 52, 52); font-size: 0.9em;";
             
-            // Eğer not 0 ise ve özel bir harf notuysa, parantez içinde harfi göster
             if (not === 0 && isNaN(parseFloat(notTextContent))) {
-                subScoreElement.textContent = ` (0)`; // Sadece (0) gösterilecek
+                 subScoreElement.textContent = ` (0)`;
             } else {
-                subScoreElement.textContent = ` (${formatGradeNumber(calculatedPoint)})`;
+                 subScoreElement.textContent = ` (${formatGradeNumber(calculatedPoint)})`;
             }
             
             subScoreElement.setAttribute("data-calculated-score", "sub");
@@ -159,21 +152,16 @@ function processGradeTable(table) {
         }
     });
 
-    // Bütünleme varsa ve final notu daha önce eklendiyse, onu toplamdan çıkarmaya artık gerek yok,
-    // çünkü döngünün başında kontrol edip hiç toplamadık. Bu, kodu basitleştirir.
-
     const formattedTotal = formatGradeNumber(totalPoints);
     const successGradeRow = currentRows.find(row => row.querySelector("td:nth-child(2)")?.textContent.includes("Başarı Notu"));
 
     if (successGradeRow) {
-        // Mevcut Başarı Notu satırını güncelle
+        // Bu bölüm ders detay sayfası içindir, zaten doğru çalışıyor.
         const successGradeCellSpan = successGradeRow.querySelector("td:nth-child(3) span:first-child");
         if (successGradeCellSpan) {
             const letterGrade = getPrimaryTextContent(successGradeCellSpan).match(/^[A-ZÇĞİÖŞÜ]{1,2}(?![a-z])/)?.[0] || "";
             const colors = { FF: "#df1212", FD: "#df1212", DD: "blue", DC: "blue", DZ: "orange", GR: "orange" };
             successGradeCellSpan.style.color = colors[letterGrade] || "green";
-
-            // Mevcut ortalama span'ini bul ve sil, sonra yeniden oluştur
             successGradeCellSpan.querySelector("#notOrtalama")?.remove();
             
             const totalPointsElement = document.createElement("span");
@@ -184,17 +172,14 @@ function processGradeTable(table) {
             successGradeCellSpan.appendChild(totalPointsElement);
         }
     } else {
-        // Yeni ortalama satırı ekle
+        // --- SORUNU ÇÖZEN DEĞİŞİKLİK BURADA ---
+        // Bu bölüm ana ders listesi sayfası içindir.
+        // Karmaşık yerleştirme mantığı yerine, ortalama satırını her zaman tbody'nin sonuna ekle.
         const newAverageRow = document.createElement("tr");
-        newAverageRow.className = "calculated-average-row"; // Kolayca bulup silmek için class ekle
-        const isDetailPage = !!table.closest("#icerik");
-        newAverageRow.innerHTML = `<td></td><td class="font-weight-bold">Ortalama</td>${isDetailPage ? '<td></td>' : ''}<td class="text-right font-weight-bold"><span id="notOrtalama" data-calculated-score="true" style="color: #000">${formattedTotal}</span></td>`;
+        newAverageRow.className = "calculated-average-row";
+        newAverageRow.innerHTML = `<td></td><td class="font-weight-bold">Ortalama</td><td class="text-right font-weight-bold"><span id="notOrtalama" data-calculated-score="true" style="color: #000">${formattedTotal}</span></td>`;
         
-        const referenceKeywords = ["Anket", "Bütünleme Başvurusu", "Devam Durumu", "İş Sağlığı ve Güvenliği"];
-        const referenceNode = currentRows.find(r =>
-            referenceKeywords.some(text => r.textContent.includes(text))
-        );
-        tbody.insertBefore(newAverageRow, referenceNode || null);
+        tbody.appendChild(newAverageRow);
     }
 }
 
