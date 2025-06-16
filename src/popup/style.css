@@ -225,7 +225,8 @@ h1#headerTitle {
   margin: 0;
 }
 
-.btn-balance-load { /* Bu ID'li butona ait stiller */
+.btn-balance-load {
+  /* Bu ID'li butona ait stiller */
   background-color: #28a745;
   color: white;
   border: none;
@@ -269,7 +270,7 @@ h1#headerTitle {
   margin: 0;
 }
 
-.btn-food-menu-toggle svg { 
+.btn-food-menu-toggle svg {
   width: 16px;
   height: 16px;
 }
@@ -316,7 +317,6 @@ h1#headerTitle {
   text-decoration: underline;
 }
 
-
 /* 6. Settings Content */
 #settingsContent .button-group {
   display: grid;
@@ -341,7 +341,7 @@ h1#headerTitle {
   padding: 9px 12px;
   font-size: 13px;
   font-weight: 500;
-  border: none; 
+  border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease;
@@ -372,14 +372,14 @@ h1#headerTitle {
 .btn-secondary {
   background-color: #e9ecef;
   color: #343a40;
-  border: 1px solid #ced4da; 
+  border: 1px solid #ced4da;
 }
 
 .btn-secondary:hover {
   background-color: #d3d9df;
 }
 
-.btn-small { 
+.btn-small {
   padding: 6px 10px !important;
   font-size: 12px !important;
   gap: 6px !important;
@@ -390,7 +390,6 @@ h1#headerTitle {
   height: 13px !important;
   margin-right: 4px !important;
 }
-
 
 /* 8. Toggle Switch Component */
 .toggle-item {
