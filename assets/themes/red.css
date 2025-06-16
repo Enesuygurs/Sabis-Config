@@ -575,12 +575,9 @@ td.fc-list-item-title.fc-widget-content {
   background-color: #ab213052 !important;
 }
 tr:has(> td[colspan*="3"]) {
-  border-left: 4px solid gray;
   background: #efefef;
 }
-tr:has(> td[colspan*="5"]) {
-  border-left: 4px solid #d9d9d9;
-}
+
 .navi.navi-active .navi-item .navi-link.active {
   background-color: #fbfbfb;
 }
@@ -591,7 +588,7 @@ li[class*="menuYemekListesi"] > small {
   color: #b7140f !important;
 }
 .btn.btn-secondary > i.fa:before {
-      color: white;
+  color: white;
 }
 @media (min-width: 992px) {
   .aside-minimize:not(.aside-minimize-hover)

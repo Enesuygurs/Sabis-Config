@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const setText = (element, text, prefix = '') => {
         if (element) {
-            element.textContent = text ? `${prefix}${text}` : `${prefix}N/A`;
+            element.textContent = text ? `${prefix}${text}` : `${prefix}-`;
         }
     };
 
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         if (profile) {
             setText(ELEMENTS.studentName, profile.name);
-            const departmentText = profile.department?.split('PR.')[0].trim() || 'N/A';
+            const departmentText = profile.department?.split('PR.')[0].trim() || '-';
             setText(ELEMENTS.studentDepartment, departmentText);
             setText(ELEMENTS.studentNumber, profile.number);
             ELEMENTS.studentPhoto.src = profile.imageUrl || AVATAR_PATH;
