@@ -198,9 +198,6 @@ body {
 .home-table {
   padding: 0 !important;
 }
-.btn {
-  border: 2px solid transparent;
-}
 .btn-default:hover {
   background: #931d1d !important;
   border: 2px solid #6f1a17 !important;
@@ -593,10 +590,8 @@ tr:has(> td[colspan*="5"]) {
 li[class*="menuYemekListesi"] > small {
   color: #b7140f !important;
 }
-
-.fa-arrow-left:before {
-  content: "\f060";
-  color: white;
+.btn.btn-secondary > i.fa:before {
+      color: white;
 }
 @media (min-width: 992px) {
   .aside-minimize:not(.aside-minimize-hover)

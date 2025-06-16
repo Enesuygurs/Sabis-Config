@@ -7,7 +7,7 @@ const OFFSCREEN_DOCUMENT_URL = chrome.runtime.getURL('src/offscreen/offscreen.ht
 let creatingOffscreenPromise = null;
 
 async function hasOffscreenDocument() {
-    if (typeof chrome.runtime.getContexts === 'function') {
+    if (chrome.runtime.getContexts) {
         const contexts = await chrome.runtime.getContexts({
             contextTypes: ['OFFSCREEN_DOCUMENT'],
             documentUrls: [OFFSCREEN_DOCUMENT_URL]
@@ -18,8 +18,12 @@ async function hasOffscreenDocument() {
 }
 
 async function setupOffscreenDocument() {
-    if (await hasOffscreenDocument()) return;
-    if (creatingOffscreenPromise) return creatingOffscreenPromise;
+    if (await hasOffscreenDocument()) {
+        return;
+    }
+    if (creatingOffscreenPromise) {
+        return creatingOffscreenPromise;
+    }
 
     creatingOffscreenPromise = chrome.offscreen.createDocument({
         url: OFFSCREEN_DOCUMENT_URL,
@@ -30,24 +34,24 @@ async function setupOffscreenDocument() {
         await creatingOffscreenPromise;
     } catch (error) {
         if (!error.message.includes("Only a single offscreen document may be created")) {
-            // Beklenmeyen bir hata ise tekrar fırlat
+            console.error("Offscreen document creation failed:", error);
             throw error;
         }
-        // Bilinen hata ise yut, sorun değil.
     } finally {
         creatingOffscreenPromise = null;
     }
 }
 
-async function fetchAndParseData(url, parseAction, method = 'GET', body = null) {
+async function fetchAndParseData(url, parseAction, options = {}) {
+    const { method = 'GET', body = null } = options;
     await setupOffscreenDocument();
+
     try {
         const fetchOptions = {
-            method: method,
+            method,
             credentials: 'include',
             headers: {
                 "accept": "text/html, */*; q=0.01",
-                "accept-language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
                 "x-requested-with": "XMLHttpRequest"
             }
         };
@@ -60,60 +64,47 @@ async function fetchAndParseData(url, parseAction, method = 'GET', body = null) 
         const response = await fetch(url, fetchOptions);
 
         if (!response.ok) {
-            const errorStatus = response.status;
-            // parseAction'a göre varsayılan hata objesi/değeri döndür
-            if (parseAction === "parseFoodMenuAPIResponse") return { dateLabel: `Hata: ${errorStatus}`, normalMenu: [], dietMenu: [], hasMenu: false };
-            if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
-            return null; // Diğer durumlar için null
+            if (parseAction === "parseFoodMenuAPIResponse") return { normalMenu: [], dietMenu: [], hasMenu: false };
+            return parseAction === "parseHtmlForProfile" ? null : 'N/A';
         }
+
         const htmlText = await response.text();
-        return await chrome.runtime.sendMessage({
+        return chrome.runtime.sendMessage({
             action: parseAction,
             htmlContent: htmlText
         });
 
     } catch (error) {
-        // parseAction'a göre varsayılan hata objesi/değeri döndür
-        if (parseAction === "parseFoodMenuAPIResponse") return { dateLabel: "API Bağlantı Hatası", normalMenu: [], dietMenu: [], hasMenu: false };
-        if (parseAction === "parseHtmlForGNO" || parseAction === "parseHtmlForBalance") return 'N/A';
-        return null;
+        console.error(`Fetch failed for ${url}:`, error);
+        if (parseAction === "parseFoodMenuAPIResponse") return { normalMenu: [], dietMenu: [], hasMenu: false };
+        return parseAction === "parseHtmlForProfile" ? null : 'N/A';
     }
 }
 
-async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, method = 'GET', body = null) {
+async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, options = {}) {
     try {
-        let data = await fetchAndParseData(url, parseAction, method, body);
+        const data = await fetchAndParseData(url, parseAction, options);
+        let dataToStore = data;
 
-        let dataIsValid = false;
-        if (data !== null && data !== undefined) { // Hem null hem undefined kontrolü
-            if (typeof data === 'string') {
-                dataIsValid = data !== 'N/A';
-            } else if (typeof data === 'object') {
-                if (storageKey === 'studentProfile') {
-                    dataIsValid = (data.name !== 'N/A' && data.name !== undefined) || (data.number !== 'N/A' && data.number !== undefined);
-                } else if (storageKey === 'foodMenuData') { // storageKey foodMenuData olacak
-                    dataIsValid = data.hasMenu !== undefined;
-                } else {
-                    dataIsValid = true; // Diğer obje türleri için genel geçerlilik
-                }
-            }
+        if (data === null || data === undefined || (typeof data === 'string' && data === 'N/A')) {
+            dataToStore = defaultValue;
+        } else if (storageKey === 'studentProfile' && (!data.name || data.name === 'N/A')) {
+            dataToStore = defaultValue;
         }
 
-        const dataToStore = dataIsValid ? data : defaultValue;
-
-        if (storageKey === 'studentProfile' &&
-            (dataToStore.name === 'N/A' || dataToStore.name === undefined) &&
-            (dataToStore.number === 'N/A' || dataToStore.number === undefined)) {
+        if (storageKey === 'studentProfile' && (dataToStore.name === 'N/A' || dataToStore.name === 'Giriş Yapılmamış')) {
             const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
-            if (oldProfile?.name && oldProfile.name !== 'N/A' && oldProfile.name !== "Giriş Yapılmamış") {
-                const girişYapılmamışProfile = { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'assets/images/avatar.png' };
-                await chrome.storage.local.set({ [storageKey]: girişYapılmamışProfile });
-                return girişYapılmamışProfile;
+            if (oldProfile?.name && oldProfile.name !== 'N/A' && oldProfile.name !== 'Giriş Yapılmamış') {
+                const loggedOutProfile = { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'assets/images/avatar.png' };
+                await chrome.storage.local.set({ [storageKey]: loggedOutProfile });
+                return loggedOutProfile;
             }
         }
+        
         await chrome.storage.local.set({ [storageKey]: dataToStore });
         return dataToStore;
     } catch (e) {
+        console.error(`Error in fetchDataAndStore for ${storageKey}:`, e);
         await chrome.storage.local.set({ [storageKey]: defaultValue });
         return defaultValue;
     }
@@ -123,35 +114,29 @@ async function updateStudentData() {
     const profileDefault = { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'assets/images/avatar.png' };
     const gnoDefault = 'N/A';
     const balanceDefault = 'N/A';
+    const foodMenuDefault = { normalMenu: [], dietMenu: [], hasMenu: false };
 
     const today = new Date();
-    const options = { weekday: 'long', day: 'numeric', month: 'long' };
-    const formattedDateForMenu = today.toLocaleDateString('tr-TR', options);
-    // foodMenu için varsayılan değerin artık dateLabel içermemesine dikkat, o parseAction'dan geliyor.
-    // Ancak parseAction hata döndürürse, dateLabel'ı biz ekleyeceğiz.
-    const foodMenuParseDefault = { normalMenu: [], dietMenu: [], hasMenu: false };
-
-
     const foodMenuPayload = {
         'year': today.getFullYear(),
         'month': today.getMonth() + 1,
         'day': today.getDate()
     };
 
-    const [profileData, gnoData, balanceData, parsedFoodMenuData] = await Promise.all([
-        fetchDataAndStore('studentProfile', STUDENT_PROFILE_URL, "parseHtmlForProfile", profileDefault, 'GET'),
-        fetchDataAndStore('studentGNO', TRANSCRIPT_URL, "parseHtmlForGNO", gnoDefault, 'GET'),
-        fetchDataAndStore('studentBalance', CARD_BALANCE_URL, "parseHtmlForBalance", balanceDefault, 'GET'),
-        fetchDataAndStore('foodMenuData', FOOD_MENU_API_URL, "parseFoodMenuAPIResponse", foodMenuParseDefault, 'POST', foodMenuPayload)
+    const [profileData, gnoData, balanceData, foodMenuData] = await Promise.all([
+        fetchDataAndStore('studentProfile', STUDENT_PROFILE_URL, "parseHtmlForProfile", profileDefault),
+        fetchDataAndStore('studentGNO', TRANSCRIPT_URL, "parseHtmlForGNO", gnoDefault),
+        fetchDataAndStore('studentBalance', CARD_BALANCE_URL, "parseHtmlForBalance", balanceDefault),
+        fetchDataAndStore('foodMenu', FOOD_MENU_API_URL, "parseFoodMenuAPIResponse", foodMenuDefault, { method: 'POST', body: foodMenuPayload })
     ]);
 
-    const finalFoodMenuData = {
-        ...parsedFoodMenuData,
-        dateLabel: parsedFoodMenuData?.dateLabel?.includes("Hata") || !parsedFoodMenuData?.dateLabel ? formattedDateForMenu : parsedFoodMenuData.dateLabel
-    };
-    await chrome.storage.local.set({ foodMenu: finalFoodMenuData });
+    const formattedDateForMenu = today.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' });
+    if (!foodMenuData.dateLabel) {
+        foodMenuData.dateLabel = formattedDateForMenu;
+    }
+    await chrome.storage.local.set({ foodMenu: foodMenuData });
 
-    return { profile: profileData, gno: gnoData, balance: balanceData, foodMenu: finalFoodMenuData };
+    return { profile: profileData, gno: gnoData, balance: balanceData, foodMenu: foodMenuData };
 }
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -159,10 +144,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateStudentData()
             .then(data => sendResponse({ status: "completed", data }))
             .catch(error => {
+                console.error("Failed to update student data:", error);
                 sendResponse({ status: "error", message: error.toString() });
             });
-        return true; // Asenkron yanıt için true döndürülmeli
+        return true;
     }
-    // Diğer mesaj türleri için de true döndürmek iyi bir pratiktir, eğer gelecekte eklenecekse.
     return true;
 });

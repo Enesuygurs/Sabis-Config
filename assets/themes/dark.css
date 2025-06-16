@@ -26,7 +26,7 @@
 }
 .table thead th {
   vertical-align: bottom;
-  border-bottom: 2px solid #1a1a1a;
+  border-bottom: 1px solid #1a1a1a;
 }
 th {
   color: white;
@@ -130,9 +130,8 @@ div.d-flex > table > tbody > tr > td {
 .card-header:first-child {
   border-radius: 0;
 }
-.table-bordered th,
-.table-bordered td {
-  border: 0 !important;
+.table-bordered th, .table-bordered td {
+    border-color: #101010;
 }
 .card {
   border-radius: 0 !important;
@@ -511,10 +510,20 @@ table tbody tr td span[style*="color:black"] {
 }
 
 table > tfoot > tr[style*="background-color:#f9f9f9 !important;"] > td {
-  background-color: #000000f0 !important;
+  background-color: #111 !important;
 }
 
 tr > td[style*="background-color: #f9f9f9;"],
 tr > td[style*="background-color:#f9f9f9;"] {
-  background-color: #0f0f0f !important;
+  background-color: #111 !important;
+}
+
+.btn.btn-secondary {
+    color: #cdcdcd !important;
+    background-color: #242424 !important;
+    border-color: #242424 !important;
+}
+
+.btn.btn-secondary > i.fa:before {
+    color: #3f3f3f !important;
 }
