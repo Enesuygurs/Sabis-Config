@@ -5,10 +5,10 @@ function extractStudentInfoFromDOM(docText) {
 
     const nameFromTopbar = doc.querySelector('.topbar .d-md-inline.mr-3');
     const nameFromProfileCard = doc.querySelector('#kt_profile_aside .card-title.font-weight-bolder');
-    const studentName = nameFromProfileCard?.textContent.trim() || nameFromTopbar?.textContent.trim().replace(/\s\s+/g, ' ') || 'N/A';
+    const studentName = nameFromProfileCard?.textContent.trim() || nameFromTopbar?.textContent.trim().replace(/\s\s+/g, ' ') || '-';
 
     const studentNumberEl = doc.querySelector('#kt_profile_aside .font-weight-bold.text-dark-50.font-size-sm.pb-6');
-    const studentNumber = studentNumberEl?.textContent.trim() || 'N/A';
+    const studentNumber = studentNumberEl?.textContent.trim() || '-';
 
     const profileImageEl = doc.querySelector('#kt_profile_aside .symbol-label img');
     let profileImageUrl = profileImageEl?.getAttribute('src') || 'images/avatar.png';
@@ -17,11 +17,11 @@ function extractStudentInfoFromDOM(docText) {
     }
 
     const departmentLines = doc.querySelectorAll('#kt_profile_aside .pt-1 .d-flex.align-items-center.pb-1 .text-dark-65.font-weight-bold');
-    let department = 'N/A';
+    let department = '-';
     if (departmentLines.length >= 3 && departmentLines[2]?.textContent.includes("PR.")) {
         department = departmentLines[2].textContent.trim();
     } else if (departmentLines.length >= 2) {
-        department = departmentLines[1]?.textContent.trim() || 'N/A';
+        department = departmentLines[1]?.textContent.trim() || '-';
     }
 
     return {
@@ -33,11 +33,11 @@ function extractStudentInfoFromDOM(docText) {
 }
 
 function extractGNOFromDOM(docText) {
-    if (!docText) return 'N/A';
+    if (!docText) return '-';
     const parser = new DOMParser();
     const doc = parser.parseFromString(docText, "text/html");
     const allTables = doc.querySelectorAll('.card-body table.table-condensed');
-    if (allTables.length === 0) return 'N/A';
+    if (allTables.length === 0) return '-';
 
     const lastTable = allTables[allTables.length - 1];
     const tfootRows = lastTable.querySelectorAll('tfoot tr');
@@ -45,11 +45,11 @@ function extractGNOFromDOM(docText) {
         row.querySelector('td:first-child')?.textContent.trim().startsWith('Genel:')
     );
 
-    return generalAverageRow?.querySelector('td:last-child')?.textContent.trim() || 'N/A';
+    return generalAverageRow?.querySelector('td:last-child')?.textContent.trim() || '-';
 }
 
 function extractBalanceFromDOM(docText) {
-    if (!docText) return 'N/A';
+    if (!docText) return '-';
     const parser = new DOMParser();
     const doc = parser.parseFromString(docText, "text/html");
     const strongElements = doc.querySelectorAll('.card-body strong');
@@ -62,7 +62,7 @@ function extractBalanceFromDOM(docText) {
             }
         }
     }
-    return 'N/A';
+    return '-';
 }
 
 function extractFoodMenuFromAPIResponse(htmlText) {
