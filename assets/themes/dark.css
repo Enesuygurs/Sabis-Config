@@ -483,19 +483,19 @@ div[class*="d-flex justify-content-between"]
 }
 
 .bg-diagonal-light-warning:before {
-    background-color: #1a5189;
+  background-color: #1a5189;
 }
 
 .bg-diagonal:after {
-    background-color: #1a1a1a;
+  background-color: #1a1a1a;
 }
 
 .card-body > .d-flex > .d-flex > span.h4.text-dark.mb-5 {
-color: #414141 !important;
+  color: #414141 !important;
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #121212 !important;
+  background-color: #121212 !important;
 }
 
 tr[style="background-color:#d8dcf1;"] {
@@ -503,17 +503,18 @@ tr[style="background-color:#d8dcf1;"] {
 }
 
 table[class*="table "] > tbody > tr[style*="background-color:white"] {
-    background: #121212 !important;
+  background: #121212 !important;
 }
 
 table tbody tr td span[style*="color:black"] {
-    color: white !important;
+  color: white !important;
 }
 
 table > tfoot > tr[style*="background-color:#f9f9f9 !important;"] > td {
-    background-color: #000000f0 !important;
+  background-color: #000000f0 !important;
 }
 
-tr > td[style*="background-color: #f9f9f9;"], tr > td[style*="background-color:#f9f9f9;"]{
-    background-color: #0f0f0f !important;
+tr > td[style*="background-color: #f9f9f9;"],
+tr > td[style*="background-color:#f9f9f9;"] {
+  background-color: #0f0f0f !important;
 }
