@@ -65,7 +65,7 @@ async function fetchAndParseData(url, parseAction, options = {}) {
 
         if (!response.ok) {
             if (parseAction === "parseFoodMenuAPIResponse") return { normalMenu: [], dietMenu: [], hasMenu: false };
-            return parseAction === "parseHtmlForProfile" ? null : 'N/A';
+            return parseAction === "parseHtmlForProfile" ? null : '-';
         }
 
         const htmlText = await response.text();
@@ -77,7 +77,7 @@ async function fetchAndParseData(url, parseAction, options = {}) {
     } catch (error) {
         console.error(`Fetch failed for ${url}:`, error);
         if (parseAction === "parseFoodMenuAPIResponse") return { normalMenu: [], dietMenu: [], hasMenu: false };
-        return parseAction === "parseHtmlForProfile" ? null : 'N/A';
+        return parseAction === "parseHtmlForProfile" ? null : '-';
     }
 }
 
@@ -86,16 +86,16 @@ async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, opt
         const data = await fetchAndParseData(url, parseAction, options);
         let dataToStore = data;
 
-        if (data === null || data === undefined || (typeof data === 'string' && data === 'N/A')) {
+        if (data === null || data === undefined || (typeof data === 'string' && data === '-')) {
             dataToStore = defaultValue;
-        } else if (storageKey === 'studentProfile' && (!data.name || data.name === 'N/A')) {
+        } else if (storageKey === 'studentProfile' && (!data.name || data.name === '-')) {
             dataToStore = defaultValue;
         }
 
-        if (storageKey === 'studentProfile' && (dataToStore.name === 'N/A' || dataToStore.name === 'Giriş Yapılmamış')) {
+        if (storageKey === 'studentProfile' && (dataToStore.name === '-' || dataToStore.name === 'Giriş Yapılmamış')) {
             const { studentProfile: oldProfile } = await chrome.storage.local.get('studentProfile');
-            if (oldProfile?.name && oldProfile.name !== 'N/A' && oldProfile.name !== 'Giriş Yapılmamış') {
-                const loggedOutProfile = { name: "Giriş Yapılmamış", number: "N/A", department: "N/A", imageUrl: 'assets/images/avatar.png' };
+            if (oldProfile?.name && oldProfile.name !== '-' && oldProfile.name !== 'Giriş Yapılmamış') {
+                const loggedOutProfile = { name: "Giriş Yapılmamış", number: "-", department: "-", imageUrl: 'assets/images/avatar.png' };
                 await chrome.storage.local.set({ [storageKey]: loggedOutProfile });
                 return loggedOutProfile;
             }
@@ -111,9 +111,9 @@ async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, opt
 }
 
 async function updateStudentData() {
-    const profileDefault = { name: 'N/A', number: 'N/A', department: 'N/A', imageUrl: 'assets/images/avatar.png' };
-    const gnoDefault = 'N/A';
-    const balanceDefault = 'N/A';
+    const profileDefault = { name: '-', number: '-', department: '-', imageUrl: 'assets/images/avatar.png' };
+    const gnoDefault = '-';
+    const balanceDefault = '-';
     const foodMenuDefault = { normalMenu: [], dietMenu: [], hasMenu: false };
 
     const today = new Date();
