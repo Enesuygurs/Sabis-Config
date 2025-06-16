@@ -1,3 +1,1 @@
 1. Kod düzenlemeleri yaptırılacak.
-2. ayrıntılı manifest dosyası düzenlenecek.
-3. GR gibi harfli notlar - gözüküyor.
