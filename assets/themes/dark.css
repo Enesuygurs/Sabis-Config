@@ -124,6 +124,9 @@ td.fc-axis.fc-time.fc-widget-content {
 div.d-flex > table > tbody > tr > td {
   background: #111111 !important;
 }
+table > tbody > tr > td {
+  background: #111111 !important;
+}
 .table-bordered {
   border: 1px solid #111111 !important;
 }
