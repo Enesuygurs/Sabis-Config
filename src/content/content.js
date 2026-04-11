@@ -497,3 +497,28 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     return true;
 });
+
+if (window.location.pathname.startsWith("/Kart/Bakiye") && window.location.hash.startsWith("#autoLoad=")) {
+    const amount = window.location.hash.split("=")[1];
+    const select = document.querySelector("select[name='Amount']");
+    if (select) {
+        if (!Array.from(select.options).some(opt => opt.value === amount)) {
+            const newOption = new Option(amount, amount, true, true);
+            select.appendChild(newOption);
+        }
+        select.value = amount;
+        
+        if (typeof window.KartYuklemeChanged === "function") {
+            window.KartYuklemeChanged(select);
+        } else if (select.onchange) {
+            select.onchange({ target: select });
+        } else {
+             select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        const form = select.closest("form");
+        if (form) {
+            form.submit();
+        }
+    }
+}
