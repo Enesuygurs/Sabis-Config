@@ -214,7 +214,7 @@ h1#headerTitle {
 }
 
 .balance-icon {
-  color: #28a745; /* Bu class HTML'de SVG'ye atanmış olmalı */
+  color: #28a745;
   flex-shrink: 0;
 }
 
@@ -226,7 +226,6 @@ h1#headerTitle {
 }
 
 .btn-balance-load {
-  /* Bu ID'li butona ait stiller */
   background-color: #28a745;
   color: white;
   border: none;

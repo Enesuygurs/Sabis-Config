@@ -18,10 +18,7 @@
   text-align: right !important;
   color: #4d4d4d;
 }
-.table th,
-.table td {
-  vertical-align: middle;
-}
+
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-heading .menu-text,
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-link .menu-text {
   color: #bd0000 !important;
@@ -195,9 +192,7 @@ body {
 .home-table > li ul {
   border: 0;
 }
-.home-table {
-  padding: 0 !important;
-}
+
 .btn-default:hover {
   background: #931d1d !important;
   border: 2px solid #6f1a17 !important;
@@ -238,6 +233,7 @@ small i {
   color: #c5c5c5;
 }
 .home-table {
+  padding: 0 !important;
   background-color: #ffffff;
 }
 .footer-fluid {

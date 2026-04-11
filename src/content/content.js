@@ -1,7 +1,7 @@
 const THEME_LINK_ID_PREFIX = "sauconfig-theme-";
 const STORAGE_KEYS = {
-    REDMODE: "redmode_state",
-    DARKMODE: "darkmode_state",
+    RED_MODE: "redmode_state",
+    DARK_MODE: "darkmode_state",
     STEALTH: "stealth_state",
     CALCULATE: "calculate_state"
 };
@@ -54,7 +54,9 @@ function enableStealthMode() {
         });
     });
     document.querySelectorAll(".card-body .pb-5 .pt-1").forEach(el => el.style.display = "none");
-    document.querySelectorAll("*").forEach(element => {
+    const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'META', 'LINK', 'BR', 'HR', 'HEAD', 'TITLE', 'NOSCRIPT', 'TEMPLATE', 'IFRAME', 'SVG', 'PATH']);
+    document.querySelectorAll("body *").forEach(element => {
+        if (SKIP_TAGS.has(element.tagName)) return;
         const computedStyle = window.getComputedStyle(element);
         if (computedStyle?.getPropertyValue("background-image").includes("data:image/svg+xml")) {
             try {
@@ -64,7 +66,9 @@ function enableStealthMode() {
                     const updatedSvg = decodedSvg.replace(/<text[^>]*>.*?<\/text>/g, (match) => match.replace(/>(.*?)</, ">SABİS Config<"));
                     element.style.setProperty("background-image", `url("data:image/svg+xml,${encodeURIComponent(updatedSvg)}")`, "important");
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.warn('Stealth mode SVG parse hatası:', e);
+            }
         }
     });
 }
@@ -226,8 +230,8 @@ function runOrClearGradeLogic(calculateEnabled) {
 }
 
 function applyInitialSettings(settings) {
-    manageTheme("red", "red.css", !!settings[STORAGE_KEYS.REDMODE]);
-    manageTheme("dark", "dark.css", !!settings[STORAGE_KEYS.DARKMODE]);
+    manageTheme("red", "red.css", !!settings[STORAGE_KEYS.RED_MODE]);
+    manageTheme("dark", "dark.css", !!settings[STORAGE_KEYS.DARK_MODE]);
     if (settings[STORAGE_KEYS.STEALTH]) enableStealthMode();
     runOrClearGradeLogic(!!settings[STORAGE_KEYS.CALCULATE]);
 }
@@ -239,8 +243,8 @@ chrome.storage.local.get(Object.values(STORAGE_KEYS), (settings) => {
 
 chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local') {
-        if (changes[STORAGE_KEYS.REDMODE] !== undefined) manageTheme("red", "red.css", !!changes[STORAGE_KEYS.REDMODE].newValue);
-        if (changes[STORAGE_KEYS.DARKMODE] !== undefined) manageTheme("dark", "dark.css", !!changes[STORAGE_KEYS.DARKMODE].newValue);
+        if (changes[STORAGE_KEYS.RED_MODE] !== undefined) manageTheme("red", "red.css", !!changes[STORAGE_KEYS.RED_MODE].newValue);
+        if (changes[STORAGE_KEYS.DARK_MODE] !== undefined) manageTheme("dark", "dark.css", !!changes[STORAGE_KEYS.DARK_MODE].newValue);
         if (changes[STORAGE_KEYS.CALCULATE] !== undefined) runOrClearGradeLogic(!!changes[STORAGE_KEYS.CALCULATE].newValue);
     }
 });

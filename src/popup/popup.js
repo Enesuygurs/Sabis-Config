@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const executeOnSabisTab = (func, args) => {
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-            if (tab?.url?.includes("sakarya.edu.tr") && tab.url.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
+            if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
                 chrome.scripting.executeScript({ target: { tabId: tab.id }, func, args });
             } else {
                 alert("Bu işlem sadece SABİS OBS sayfalarında çalışır.");
@@ -208,7 +208,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         ELEMENTS.autoFillSurveyBtn?.addEventListener("click", () => {
             executeOnSabisTab(() => {
-                document.querySelectorAll("input[type='radio'][value='4'], input[type='radio'][name*='A']").forEach(r => r.checked = true);
+                document.querySelectorAll("input[type='radio'][value='4']").forEach(r => {
+                    r.checked = true;
+                    r.dispatchEvent(new Event('change', { bubbles: true }));
+                });
             });
         });
         
@@ -234,9 +237,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 chrome.storage.local.set({ [toggle.key]: isChecked });
 
                 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                    if (tab?.url?.includes("sakarya.edu.tr")) {
+                    if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/") || tab?.url?.startsWith("https://menu.sabis.sakarya.edu.tr/")) {
                         if (toggle.reload) {
-                            if (toggle.id === "calculateCheckbox" && !tab.url.includes("/Ders")) return;
                             chrome.tabs.reload(tab.id);
                         } else if (toggle.action) {
                             chrome.tabs.sendMessage(tab.id, { action: toggle.action, state: isChecked }).catch(e => console.error(e));
