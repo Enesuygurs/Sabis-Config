@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
         STEALTH: "stealth_state",
         DARK_MODE: "darkmode_state",
         DOWNLOAD_ALL: "downloadall_state",
+        CHECK_QUESTIONS: "checkquestions_state",
         STUDENT_PROFILE: "studentProfile",
         STUDENT_GNO: "studentGNO",
         STUDENT_BALANCE: "studentBalance",
@@ -33,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleFoodMenuBtn: document.getElementById("toggleFoodMenuTypeBtn"),
         changeGradesBtn: document.getElementById("changeGrades"),
         autoFillSurveyBtn: document.getElementById("autoFillSurvey"),
-        checkQuestionsBtn: document.getElementById("checkQuestions"),
     };
 
     const TOGGLES = {
@@ -41,7 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
         darkTheme: { id: "themeDarkCheckbox", key: STORAGE_KEYS.DARK_MODE, action: "toggleDarkTheme" },
         stealth: { id: "stealthCheckbox", key: STORAGE_KEYS.STEALTH, reload: true },
         calculate: { id: "calculateCheckbox", key: STORAGE_KEYS.CALCULATE, reload: false },
-        downloadAll: { id: "downloadAllCheckbox", key: STORAGE_KEYS.DOWNLOAD_ALL, reload: false }
+        downloadAll: { id: "downloadAllCheckbox", key: STORAGE_KEYS.DOWNLOAD_ALL, reload: false },
+        checkQuestions: { id: "checkQuestionsCheckbox", key: STORAGE_KEYS.CHECK_QUESTIONS, reload: false }
     };
 
     let preferredMenuType = 'normal';
@@ -216,17 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
         });
-        
-        ELEMENTS.checkQuestionsBtn?.addEventListener("click", () => {
-            executeOnSabisTab(() => {
-                document.querySelectorAll(".swal2-html-container span").forEach(span => {
-                    if (span.textContent.includes("Puan:")) {
-                        const isZero = span.textContent.includes("Puan: 0");
-                        span.style.cssText = `background: ${isZero ? "#830000" : "green"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#0d5f0d"} !important;`;
-                    }
-                });
-            });
-        });
+
 
         Object.values(TOGGLES).forEach(toggle => {
             const checkbox = document.getElementById(toggle.id);

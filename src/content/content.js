@@ -4,7 +4,8 @@ const STORAGE_KEYS = {
     DARK_MODE: "darkmode_state",
     STEALTH: "stealth_state",
     CALCULATE: "calculate_state",
-    DOWNLOAD_ALL: "downloadall_state"
+    DOWNLOAD_ALL: "downloadall_state",
+    CHECK_QUESTIONS: "checkquestions_state"
 };
 const SABIS_DERS_URL_PREFIX = "https://obs.sabis.sakarya.edu.tr/Ders";
 
@@ -254,6 +255,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
                 removeDownloadAllButton();
             }
         }
+        if (changes[STORAGE_KEYS.CHECK_QUESTIONS] !== undefined) {
+            if (changes[STORAGE_KEYS.CHECK_QUESTIONS].newValue) {
+                startQuestionCheckObserver();
+            } else {
+                stopQuestionCheckObserver();
+            }
+        }
     }
 });
 
@@ -324,6 +332,40 @@ function removeDownloadAllButton() {
     const btn = document.getElementById('sauconfig-download-all-btn');
     if (btn) btn.remove();
 }
+
+function highlightQuestionResults() {
+    document.querySelectorAll(".swal2-html-container span").forEach(span => {
+        if (span.textContent.includes("Puan:") && !span.dataset.sauconfigChecked) {
+            const isZero = span.textContent.includes("Puan: 0");
+            span.style.cssText = `background: ${isZero ? "#830000" : "green"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#0d5f0d"} !important; border-radius: 4px !important; padding: 2px 6px !important;`;
+            span.dataset.sauconfigChecked = 'true';
+        }
+    });
+}
+
+let questionCheckObserver = null;
+
+function startQuestionCheckObserver() {
+    if (questionCheckObserver) return;
+    highlightQuestionResults();
+    questionCheckObserver = new MutationObserver(() => {
+        highlightQuestionResults();
+    });
+    questionCheckObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function stopQuestionCheckObserver() {
+    if (questionCheckObserver) {
+        questionCheckObserver.disconnect();
+        questionCheckObserver = null;
+    }
+}
+
+chrome.storage.local.get([STORAGE_KEYS.CHECK_QUESTIONS], data => {
+    if (!chrome.runtime.lastError && data[STORAGE_KEYS.CHECK_QUESTIONS]) {
+        startQuestionCheckObserver();
+    }
+});
 
 if (window.location.pathname.startsWith("/Ders/Grup/")) {
     const targetNode = document.getElementById('icerik');
