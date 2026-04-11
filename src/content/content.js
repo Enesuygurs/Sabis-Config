@@ -339,10 +339,10 @@ function highlightQuestionResults() {
         const text = span.textContent;
         if (text.includes("Puan:")) {
             const isZero = text.includes("Puan: 0");
-            span.style.cssText = `background: ${isZero ? "#830000" : "#27ae60"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#1e8449"} !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
+            span.style.cssText = `background: ${isZero ? "#830000" : "#1a7a3a"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#145a2b"} !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
             span.dataset.sauconfigChecked = 'true';
         } else if (text.includes("Soru:")) {
-            span.style.cssText = `background: #34495e !important; color: white !important; border: 2px solid #2c3e50 !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
+            span.style.cssText = `background: rgb(35, 35, 35) !important; color: white !important; border: 2px solid rgb(49, 49, 49) !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
             span.dataset.sauconfigChecked = 'true';
         }
     });
