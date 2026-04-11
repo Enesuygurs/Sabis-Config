@@ -255,6 +255,7 @@ function injectDownloadAllButton() {
     if (!table) return;
     const downloadLinks = table.querySelectorAll('a.btn.btn-info[download]');
     if (downloadLinks.length === 0) return;
+    downloadLinks.forEach(link => link.style.paddingLeft = '14px');
 
     const defaultText = `<i class="fa fa-download" style="margin-right: 6px;"></i> Tümünü İndir (${downloadLinks.length} dosya)`;
 
