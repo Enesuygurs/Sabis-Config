@@ -245,10 +245,72 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     }
 });
 
+function injectDownloadAllButton() {
+    if (document.getElementById('sauconfig-download-all-btn')) return;
+    const container = document.querySelector('#icerik .card-body .table-responsive') || document.querySelector('.card-body .table-responsive');
+    if (!container) return;
+    const table = container.querySelector('table');
+    if (!table) return;
+    const downloadLinks = table.querySelectorAll('a.btn.btn-info[download]');
+    if (downloadLinks.length === 0) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 12px;';
+
+    const btn = document.createElement('button');
+    btn.id = 'sauconfig-download-all-btn';
+    btn.className = 'btn btn-info';
+    btn.innerHTML = '<i class="fa fa-download" style="margin-right: 6px;"></i> Tümünü İndir (' + downloadLinks.length + ' dosya)';
+    btn.style.cssText = 'font-weight: 600; padding: 8px 18px; font-size: 14px;';
+
+    const statusSpan = document.createElement('span');
+    statusSpan.id = 'sauconfig-download-status';
+    statusSpan.style.cssText = 'font-size: 13px; color: #666; font-weight: 500;';
+
+    btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+        btn.style.cursor = 'not-allowed';
+        const links = Array.from(downloadLinks);
+        let completed = 0;
+        statusSpan.textContent = `İndiriliyor: 0 / ${links.length}`;
+
+        for (const link of links) {
+            try {
+                const a = document.createElement('a');
+                a.href = link.href;
+                a.download = '';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (e) {
+                console.error('İndirme hatası:', e);
+            }
+            completed++;
+            statusSpan.textContent = `İndiriliyor: ${completed} / ${links.length}`;
+            if (completed < links.length) await new Promise(r => setTimeout(r, 500));
+        }
+
+        statusSpan.textContent = `Tamamlandı! (${links.length} dosya)`;
+        statusSpan.style.color = '#28a745';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+    });
+
+    wrapper.appendChild(btn);
+    wrapper.appendChild(statusSpan);
+    container.insertBefore(wrapper, table);
+}
+
 if (window.location.pathname.startsWith("/Ders/Grup/")) {
     const targetNode = document.getElementById('icerik');
     if (targetNode) {
         const observer = new MutationObserver(mutations => {
+            if (window.location.hash === '#Dokuman') {
+                setTimeout(injectDownloadAllButton, 500);
+            }
             if (window.location.hash !== '#Not') return;
             const tableAdded = mutations.some(m => m.type === 'childList' && Array.from(m.addedNodes).some(n => n.nodeType === Node.ELEMENT_NODE && (n.querySelector("table.table") || n.classList?.contains("table"))));
             if (tableAdded) {
@@ -260,6 +322,9 @@ if (window.location.pathname.startsWith("/Ders/Grup/")) {
             }
         });
         observer.observe(targetNode, { childList: true, subtree: true });
+    }
+    if (window.location.hash === '#Dokuman') {
+        setTimeout(injectDownloadAllButton, 1000);
     }
 }
 
