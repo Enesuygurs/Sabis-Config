@@ -247,25 +247,22 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 function injectDownloadAllButton() {
     if (document.getElementById('sauconfig-download-all-btn')) return;
-    const container = document.querySelector('#icerik .card-body .table-responsive') || document.querySelector('.card-body .table-responsive');
-    if (!container) return;
-    const table = container.querySelector('table');
+    const cardBody = document.querySelector('#icerik .card-body') || document.querySelector('.card-body');
+    if (!cardBody) return;
+    const tableResponsive = cardBody.querySelector('.table-responsive');
+    if (!tableResponsive) return;
+    const table = tableResponsive.querySelector('table');
     if (!table) return;
     const downloadLinks = table.querySelectorAll('a.btn.btn-info[download]');
     if (downloadLinks.length === 0) return;
 
-    const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'display: flex; align-items: center; gap: 12px; margin-bottom: 12px;';
+    const defaultText = `<i class="fa fa-download" style="margin-right: 6px;"></i> Tümünü İndir (${downloadLinks.length} dosya)`;
 
     const btn = document.createElement('button');
     btn.id = 'sauconfig-download-all-btn';
     btn.className = 'btn btn-info';
-    btn.innerHTML = '<i class="fa fa-download" style="margin-right: 6px;"></i> Tümünü İndir (' + downloadLinks.length + ' dosya)';
-    btn.style.cssText = 'font-weight: 600; padding: 8px 18px; font-size: 14px;';
-
-    const statusSpan = document.createElement('span');
-    statusSpan.id = 'sauconfig-download-status';
-    statusSpan.style.cssText = 'font-size: 13px; color: #666; font-weight: 500;';
+    btn.innerHTML = defaultText;
+    btn.style.cssText = 'font-weight: 600; padding: 8px 18px; font-size: 14px; margin-top: 12px;';
 
     btn.addEventListener('click', async () => {
         btn.disabled = true;
@@ -273,9 +270,9 @@ function injectDownloadAllButton() {
         btn.style.cursor = 'not-allowed';
         const links = Array.from(downloadLinks);
         let completed = 0;
-        statusSpan.textContent = `İndiriliyor: 0 / ${links.length}`;
 
         for (const link of links) {
+            btn.innerHTML = `<i class="fa fa-download" style="margin-right: 6px;"></i> İndiriliyor: ${completed + 1} / ${links.length}`;
             try {
                 const a = document.createElement('a');
                 a.href = link.href;
@@ -288,20 +285,19 @@ function injectDownloadAllButton() {
                 console.error('İndirme hatası:', e);
             }
             completed++;
-            statusSpan.textContent = `İndiriliyor: ${completed} / ${links.length}`;
             if (completed < links.length) await new Promise(r => setTimeout(r, 500));
         }
 
-        statusSpan.textContent = `Tamamlandı! (${links.length} dosya)`;
-        statusSpan.style.color = '#28a745';
-        btn.disabled = false;
-        btn.style.opacity = '1';
-        btn.style.cursor = 'pointer';
+        btn.innerHTML = `<i class="fa fa-check" style="margin-right: 6px;"></i> Tamamlandı! (${links.length} dosya)`;
+        setTimeout(() => {
+            btn.innerHTML = defaultText;
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.style.cursor = 'pointer';
+        }, 3000);
     });
 
-    wrapper.appendChild(btn);
-    wrapper.appendChild(statusSpan);
-    container.insertBefore(wrapper, table);
+    cardBody.appendChild(btn);
 }
 
 if (window.location.pathname.startsWith("/Ders/Grup/")) {
