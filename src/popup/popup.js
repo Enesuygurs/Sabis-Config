@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const navigateSabisTabOrNew = (url) => {
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-            if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
+            if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/") || tab?.url?.startsWith("https://esinav.sabis.sakarya.edu.tr/")) {
                 chrome.tabs.update(tab.id, { url });
             } else {
                 chrome.tabs.create({ url });
@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     const executeOnSabisTab = (func, args) => {
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-            if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/")) {
+            if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/") || tab?.url?.startsWith("https://esinav.sabis.sakarya.edu.tr/")) {
                 chrome.scripting.executeScript({ target: { tabId: tab.id }, func, args });
             } else {
                 alert("Bu işlem sadece SABİS OBS sayfalarında çalışır.");
@@ -270,7 +270,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 chrome.storage.local.set({ [toggle.key]: isChecked });
 
                 chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-                    if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/") || tab?.url?.startsWith("https://menu.sabis.sakarya.edu.tr/")) {
+                    if (tab?.url?.startsWith("https://obs.sabis.sakarya.edu.tr/") || 
+                        tab?.url?.startsWith("https://menu.sabis.sakarya.edu.tr/") ||
+                        tab?.url?.startsWith("https://esinav.sabis.sakarya.edu.tr/")) {
                         if (toggle.reload) {
                             chrome.tabs.reload(tab.id);
                         } else if (toggle.action) {
