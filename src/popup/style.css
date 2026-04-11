@@ -497,6 +497,7 @@ input:checked + .slider {
 #calculateCheckbox:checked + .slider { background-color: #2980b9; }
 #downloadAllCheckbox:checked + .slider { background-color: #27ae60; }
 #checkQuestionsCheckbox:checked + .slider { background-color: #e67e22; }
+#autoFillSurveyCheckbox:checked + .slider { background-color: #9b59b6; }
 
 input:focus + .slider {
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
