@@ -5,7 +5,8 @@ const STORAGE_KEYS = {
     STEALTH: "stealth_state",
     CALCULATE: "calculate_state",
     DOWNLOAD_ALL: "downloadall_state",
-    CHECK_QUESTIONS: "checkquestions_state"
+    CHECK_QUESTIONS: "checkquestions_state",
+    AUTO_SURVEY: "autosurvey_state"
 };
 const SABIS_DERS_URL_PREFIX = "https://obs.sabis.sakarya.edu.tr/Ders";
 
@@ -262,6 +263,13 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
                 stopQuestionCheckObserver();
             }
         }
+        if (changes[STORAGE_KEYS.AUTO_SURVEY] !== undefined) {
+            if (changes[STORAGE_KEYS.AUTO_SURVEY].newValue) {
+                startAutoSurveyObserver();
+            } else {
+                stopAutoSurveyObserver();
+            }
+        }
     }
 });
 
@@ -399,6 +407,47 @@ function stopQuestionCheckObserver() {
 chrome.storage.local.get([STORAGE_KEYS.CHECK_QUESTIONS], data => {
     if (!chrome.runtime.lastError && data[STORAGE_KEYS.CHECK_QUESTIONS]) {
         startQuestionCheckObserver();
+    }
+});
+
+function tryFillSurvey() {
+    const radioButtons = document.querySelectorAll("input[type='radio'][value='4']");
+    if (radioButtons.length > 0) {
+        let anyChanged = false;
+        radioButtons.forEach(r => {
+            if (!r.checked) {
+                r.checked = true;
+                r.dispatchEvent(new Event('change', { bubbles: true }));
+                anyChanged = true;
+            }
+        });
+        if (anyChanged) {
+            console.log("SABİS Config: Anket otomatik dolduruldu.");
+        }
+    }
+}
+
+let autoSurveyObserver = null;
+
+function startAutoSurveyObserver() {
+    if (autoSurveyObserver) return;
+    tryFillSurvey();
+    autoSurveyObserver = new MutationObserver(() => {
+        tryFillSurvey();
+    });
+    autoSurveyObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function stopAutoSurveyObserver() {
+    if (autoSurveyObserver) {
+        autoSurveyObserver.disconnect();
+        autoSurveyObserver = null;
+    }
+}
+
+chrome.storage.local.get([STORAGE_KEYS.AUTO_SURVEY], data => {
+    if (!chrome.runtime.lastError && data[STORAGE_KEYS.AUTO_SURVEY]) {
+        startAutoSurveyObserver();
     }
 });
 

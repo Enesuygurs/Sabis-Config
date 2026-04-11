@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
         DARK_MODE: "darkmode_state",
         DOWNLOAD_ALL: "downloadall_state",
         CHECK_QUESTIONS: "checkquestions_state",
+        AUTO_SURVEY: "autosurvey_state",
         STUDENT_PROFILE: "studentProfile",
         STUDENT_GNO: "studentGNO",
         STUDENT_BALANCE: "studentBalance",
@@ -42,7 +43,8 @@ document.addEventListener("DOMContentLoaded", () => {
         stealth: { id: "stealthCheckbox", key: STORAGE_KEYS.STEALTH, reload: true },
         calculate: { id: "calculateCheckbox", key: STORAGE_KEYS.CALCULATE, reload: false },
         downloadAll: { id: "downloadAllCheckbox", key: STORAGE_KEYS.DOWNLOAD_ALL, reload: false },
-        checkQuestions: { id: "checkQuestionsCheckbox", key: STORAGE_KEYS.CHECK_QUESTIONS, reload: false }
+        checkQuestions: { id: "checkQuestionsCheckbox", key: STORAGE_KEYS.CHECK_QUESTIONS, reload: false },
+        autoSurvey: { id: "autoFillSurveyCheckbox", key: STORAGE_KEYS.AUTO_SURVEY, reload: false }
     };
 
     let preferredMenuType = 'normal';
