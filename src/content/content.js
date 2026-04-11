@@ -262,7 +262,7 @@ function injectDownloadAllButton() {
     btn.id = 'sauconfig-download-all-btn';
     btn.className = 'btn btn-info';
     btn.innerHTML = defaultText;
-    btn.style.cssText = 'font-weight: 600; padding: 8px 18px; font-size: 14px; margin-top: 12px;';
+    btn.style.cssText = 'font-weight: 600; padding: 8px 18px; font-size: 14px; margin-top: 12px; float: right;';
 
     btn.addEventListener('click', async () => {
         btn.disabled = true;
