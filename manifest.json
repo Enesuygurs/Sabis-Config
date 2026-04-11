@@ -9,11 +9,11 @@
   },
   "content_scripts": [
     {
-      "matches": ["*://*.sakarya.edu.tr/*"],
+      "matches": ["*://obs.sabis.sakarya.edu.tr/*", "*://menu.sabis.sakarya.edu.tr/*"],
       "js": ["src/content/content.js"]
     }
   ],
- "host_permissions": ["*://*.sakarya.edu.tr/*"],
+ "host_permissions": ["*://obs.sabis.sakarya.edu.tr/*", "*://menu.sabis.sakarya.edu.tr/*"],
   "icons": {
     "16": "assets/images/icon16.png",
     "48": "assets/images/icon48.png"
@@ -28,7 +28,7 @@
   "web_accessible_resources": [
     {
       "resources": ["assets/themes/red.css", "assets/themes/dark.css", "assets/images/avatar.png"],
-      "matches": ["*://*.sakarya.edu.tr/*"]
+      "matches": ["*://obs.sabis.sakarya.edu.tr/*", "*://menu.sabis.sakarya.edu.tr/*"]
     }
   ]
 }
