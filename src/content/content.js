@@ -3,7 +3,8 @@ const STORAGE_KEYS = {
     RED_MODE: "redmode_state",
     DARK_MODE: "darkmode_state",
     STEALTH: "stealth_state",
-    CALCULATE: "calculate_state"
+    CALCULATE: "calculate_state",
+    DOWNLOAD_ALL: "downloadall_state"
 };
 const SABIS_DERS_URL_PREFIX = "https://obs.sabis.sakarya.edu.tr/Ders";
 
@@ -246,11 +247,24 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
         if (changes[STORAGE_KEYS.RED_MODE] !== undefined) manageTheme("red", "red.css", !!changes[STORAGE_KEYS.RED_MODE].newValue);
         if (changes[STORAGE_KEYS.DARK_MODE] !== undefined) manageTheme("dark", "dark.css", !!changes[STORAGE_KEYS.DARK_MODE].newValue);
         if (changes[STORAGE_KEYS.CALCULATE] !== undefined) runOrClearGradeLogic(!!changes[STORAGE_KEYS.CALCULATE].newValue);
+        if (changes[STORAGE_KEYS.DOWNLOAD_ALL] !== undefined) {
+            if (changes[STORAGE_KEYS.DOWNLOAD_ALL].newValue) {
+                if (window.location.hash === '#Dokuman') injectDownloadAllButton();
+            } else {
+                removeDownloadAllButton();
+            }
+        }
     }
 });
 
 function injectDownloadAllButton() {
     if (document.getElementById('sauconfig-download-all-btn')) return;
+    chrome.storage.local.get([STORAGE_KEYS.DOWNLOAD_ALL], data => {
+        if (!data[STORAGE_KEYS.DOWNLOAD_ALL]) {
+            removeDownloadAllButton();
+            return;
+        }
+        if (document.getElementById('sauconfig-download-all-btn')) return;
     const cardBody = document.querySelector('#icerik .card-body') || document.querySelector('.card-body');
     if (!cardBody) return;
     const tableResponsive = cardBody.querySelector('.table-responsive');
@@ -303,6 +317,12 @@ function injectDownloadAllButton() {
     });
 
     cardBody.appendChild(btn);
+    });
+}
+
+function removeDownloadAllButton() {
+    const btn = document.getElementById('sauconfig-download-all-btn');
+    if (btn) btn.remove();
 }
 
 if (window.location.pathname.startsWith("/Ders/Grup/")) {

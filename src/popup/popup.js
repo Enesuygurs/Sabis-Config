@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
         CALCULATE: "calculate_state",
         STEALTH: "stealth_state",
         DARK_MODE: "darkmode_state",
+        DOWNLOAD_ALL: "downloadall_state",
         STUDENT_PROFILE: "studentProfile",
         STUDENT_GNO: "studentGNO",
         STUDENT_BALANCE: "studentBalance",
@@ -39,7 +40,8 @@ document.addEventListener("DOMContentLoaded", () => {
         theme: { id: "themeCheckbox", key: STORAGE_KEYS.RED_MODE, action: "toggleRedTheme" },
         darkTheme: { id: "themeDarkCheckbox", key: STORAGE_KEYS.DARK_MODE, action: "toggleDarkTheme" },
         stealth: { id: "stealthCheckbox", key: STORAGE_KEYS.STEALTH, reload: true },
-        calculate: { id: "calculateCheckbox", key: STORAGE_KEYS.CALCULATE, reload: false }
+        calculate: { id: "calculateCheckbox", key: STORAGE_KEYS.CALCULATE, reload: false },
+        downloadAll: { id: "downloadAllCheckbox", key: STORAGE_KEYS.DOWNLOAD_ALL, reload: false }
     };
 
     let preferredMenuType = 'normal';
