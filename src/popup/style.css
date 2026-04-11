@@ -15,9 +15,12 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-body {
+body, input, button, select, textarea {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
+}
+
+body {
   background-color: #f4f6f8;
   color: #333;
   width: 300px;
@@ -417,7 +420,7 @@ h1#headerTitle {
   font-size: 13px;
   font-weight: 500;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out, transform 0.1s ease;
   text-align: center;
@@ -444,10 +447,113 @@ h1#headerTitle {
   background-color: #a50000;
 }
 
+.btn-balance-success {
+  background-color: #27ae60;
+  color: white;
+}
+
+.btn-balance-success:hover {
+  background-color: #219150;
+  opacity: 1;
+}
+
 .btn-secondary {
   background-color: #e9ecef;
   color: #343a40;
   border: 1px solid #ced4da;
+}
+
+/* 8. Modal System */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+.modal-content {
+  background: white;
+  width: 90%;
+  max-width: 260px;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #2c3e50;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body p {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.modal-input-group {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0 10px;
+  height: 40px;
+  margin-bottom: 16px;
+}
+
+.currency-symbol {
+  font-weight: 700;
+  color: #27ae60;
+  margin-right: 8px;
+}
+
+#modalBalanceInput {
+  border: none;
+  background: transparent;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-footer .btn {
+  flex: 1;
+  padding: 8px;
 }
 
 .btn-secondary:hover {
