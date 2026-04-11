@@ -235,6 +235,71 @@ h1#headerTitle {
   background-color: #218838;
 }
 
+.balance-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 32px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.balance-input-wrapper:focus-within {
+  border-color: #28a745;
+  box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+
+.custom-balance-input {
+  background: transparent;
+  border: none;
+  color: #333;
+  padding: 0 6px;
+  width: 60px;
+  height: 100%;
+  outline: none;
+  font-weight: 600;
+  font-size: 13px;
+  -moz-appearance: textfield;
+}
+
+.custom-balance-input::-webkit-outer-spin-button,
+.custom-balance-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.custom-balance-currency {
+  color: #777;
+  padding-left: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.btn-custom-balance {
+  background: #28a745;
+  border: none;
+  height: 100%;
+  padding: 0 10px;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+}
+
+.btn-custom-balance:hover {
+  background: #218838;
+}
+
+.btn-custom-balance:active {
+  background: #1e7e34;
+}
+
 /* 5.3 Food Menu Card */
 .food-menu-card {
   display: flex;

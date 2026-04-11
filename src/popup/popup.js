@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
         openSettingsBtn: document.getElementById("openSettingsBtn"),
         backToMainBtn: document.getElementById("backToMainBtnHeader"),
         refreshBtn: document.getElementById("refreshStudentInfo"),
-        loadBalanceBtn: document.getElementById("loadBalanceBtn"),
+        customBalanceInput: document.getElementById("customBalanceInput"),
+        loadCustomBalanceBtn: document.getElementById("loadCustomBalanceBtn"),
         examScheduleBtn: document.getElementById("goToExamSchedule"),
         toggleFoodMenuBtn: document.getElementById("toggleFoodMenuTypeBtn"),
         changeGradesBtn: document.getElementById("changeGrades"),
@@ -182,7 +183,18 @@ document.addEventListener("DOMContentLoaded", () => {
         ELEMENTS.openSettingsBtn?.addEventListener("click", () => switchView(true));
         ELEMENTS.backToMainBtn?.addEventListener("click", () => switchView(false));
         ELEMENTS.refreshBtn?.addEventListener("click", loadAndDisplayData);
-        ELEMENTS.loadBalanceBtn?.addEventListener("click", () => navigateSabisTabOrNew("https://obs.sabis.sakarya.edu.tr/Kart/Bakiye"));
+        const handleCustomBalanceSubmit = () => {
+            const amount = ELEMENTS.customBalanceInput?.value;
+            if (amount && Number(amount) > 0) {
+                navigateSabisTabOrNew(`https://obs.sabis.sakarya.edu.tr/Kart/Bakiye#autoLoad=${amount}`);
+                ELEMENTS.customBalanceInput.value = "";
+            }
+        };
+
+        ELEMENTS.loadCustomBalanceBtn?.addEventListener("click", handleCustomBalanceSubmit);
+        ELEMENTS.customBalanceInput?.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") handleCustomBalanceSubmit();
+        });
         ELEMENTS.examScheduleBtn?.addEventListener("click", () => navigateSabisTabOrNew("https://obs.sabis.sakarya.edu.tr/Sinav/Takvim"));
 
         ELEMENTS.toggleFoodMenuBtn?.addEventListener("click", async () => {
