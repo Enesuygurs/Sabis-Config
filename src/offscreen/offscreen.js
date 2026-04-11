@@ -11,7 +11,7 @@ function extractStudentInfoFromDOM(docText) {
     const studentNumber = studentNumberEl?.textContent.trim() || '-';
 
     const profileImageEl = doc.querySelector('#kt_profile_aside .symbol-label img');
-    let profileImageUrl = profileImageEl?.getAttribute('src') || 'images/avatar.png';
+    let profileImageUrl = profileImageEl?.getAttribute('src') || 'assets/images/avatar.png';
     if (profileImageUrl.startsWith('/')) {
         profileImageUrl = new URL(profileImageUrl, "https://obs.sabis.sakarya.edu.tr/").href;
     }
