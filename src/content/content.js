@@ -337,13 +337,43 @@ function highlightQuestionResults() {
     document.querySelectorAll(".swal2-html-container span").forEach(span => {
         if (span.dataset.sauconfigChecked) return;
         const text = span.textContent;
-        if (text.includes("Puan:")) {
-            const isZero = text.includes("Puan: 0");
-            span.style.cssText = `background: ${isZero ? "#830000" : "#1a7a3a"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#145a2b"} !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
-            span.dataset.sauconfigChecked = 'true';
-        } else if (text.includes("Soru:")) {
-            span.style.cssText = `background: rgb(35, 35, 35) !important; color: white !important; border: 2px solid rgb(49, 49, 49) !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
-            span.dataset.sauconfigChecked = 'true';
+        
+        if (text.includes("Puan:") || text.includes("Soru:")) {
+            const parts = text.split(":");
+            if (parts.length >= 2) {
+                const label = parts[0].trim().toUpperCase();
+                const value = parts[1].trim();
+                let borderColor, leftBg, rightBg, labelColor;
+
+                if (text.includes("Puan:")) {
+                    const isZero = text.includes("Puan: 0");
+                    borderColor = isZero ? "#5d0d0d" : "#145a2b";
+                    leftBg = isZero ? "#830000" : "#1a7a3a";
+                    rightBg = isZero ? "#3d0404" : "#0a2e15";
+                    labelColor = isZero ? "#f5c6c6" : "#c6f5d6";
+                } else {
+                    borderColor = "rgb(49, 49, 49)";
+                    leftBg = "rgb(35, 35, 35)";
+                    rightBg = "rgb(15, 15, 15)";
+                    labelColor = "#b0b0b0";
+                }
+
+                span.innerHTML = `
+                    <span style="background: ${leftBg}; color: ${labelColor}; padding: 4px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; border-right: 2px solid ${borderColor}; display: flex; align-items: center; justify-content: center;">${label}</span>
+                    <span style="background: ${rightBg}; color: white; padding: 4px 14px; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px;">${value}</span>
+                `;
+                span.style.cssText = `
+                    display: inline-flex !important;
+                    align-items: stretch !important;
+                    border: 2px solid ${borderColor} !important;
+                    border-radius: 0 !important;
+                    padding: 0 !important;
+                    margin: 4px 6px !important;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.2) !important;
+                    vertical-align: middle !important;
+                `;
+                span.dataset.sauconfigChecked = 'true';
+            }
         }
     });
 }
