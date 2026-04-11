@@ -335,9 +335,14 @@ function removeDownloadAllButton() {
 
 function highlightQuestionResults() {
     document.querySelectorAll(".swal2-html-container span").forEach(span => {
-        if (span.textContent.includes("Puan:") && !span.dataset.sauconfigChecked) {
-            const isZero = span.textContent.includes("Puan: 0");
-            span.style.cssText = `background: ${isZero ? "#830000" : "green"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#0d5f0d"} !important; border-radius: 4px !important; padding: 2px 6px !important;`;
+        if (span.dataset.sauconfigChecked) return;
+        const text = span.textContent;
+        if (text.includes("Puan:")) {
+            const isZero = text.includes("Puan: 0");
+            span.style.cssText = `background: ${isZero ? "#830000" : "#27ae60"} !important; color: white !important; border: 2px solid ${isZero ? "#5d0d0d" : "#1e8449"} !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
+            span.dataset.sauconfigChecked = 'true';
+        } else if (text.includes("Soru:")) {
+            span.style.cssText = `background: #34495e !important; color: white !important; border: 2px solid #2c3e50 !important; border-radius: 0 !important; padding: 4px 10px !important; display: inline-block !important; min-width: 90px !important; text-align: center !important; font-weight: 600 !important; font-size: 13px !important;`;
             span.dataset.sauconfigChecked = 'true';
         }
     });
