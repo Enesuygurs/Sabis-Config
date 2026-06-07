@@ -368,7 +368,7 @@ function highlightQuestionResults() {
 
                 span.innerHTML = `
                     <span style="background: ${leftBg}; color: ${labelColor}; padding: 4px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; border-right: 2px solid ${borderColor}; display: flex; align-items: center; justify-content: center;">${label}</span>
-                    <span style="background: ${rightBg}; color: white; padding: 4px 14px; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; min-width: 40px;">${value}</span>
+                    <span style="background: ${rightBg}; color: white; padding: 4px 14px; font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; width: 100%;">${value}</span>
                 `;
                 span.style.cssText = `
                     display: inline-flex !important;
