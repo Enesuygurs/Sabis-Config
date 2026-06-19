@@ -70,7 +70,6 @@ function enableStealthMode() {
                     element.style.setProperty("background-image", `url("data:image/svg+xml,${encodeURIComponent(updatedSvg)}")`, "important");
                 }
             } catch (e) {
-                console.warn('Stealth mode SVG parse hatası:', e);
             }
         }
     });
@@ -317,7 +316,6 @@ function injectDownloadAllButton() {
                 a.click();
                 document.body.removeChild(a);
             } catch (e) {
-                console.error('İndirme hatası:', e);
             }
             completed++;
             if (completed < links.length) await new Promise(r => setTimeout(r, 500));
@@ -413,17 +411,12 @@ chrome.storage.local.get([STORAGE_KEYS.CHECK_QUESTIONS], data => {
 function tryFillSurvey() {
     const radioButtons = document.querySelectorAll("input[type='radio'][value='4'], input[type='radio'][name^='A'][value='2']");
     if (radioButtons.length > 0) {
-        let anyChanged = false;
         radioButtons.forEach(r => {
             if (!r.checked) {
                 r.checked = true;
                 r.dispatchEvent(new Event('change', { bubbles: true }));
-                anyChanged = true;
             }
         });
-        if (anyChanged) {
-            console.log("SABİS Config: Anket otomatik dolduruldu.");
-        }
     }
 }
 

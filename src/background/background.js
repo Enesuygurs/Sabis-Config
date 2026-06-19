@@ -34,7 +34,6 @@ async function setupOffscreenDocument() {
         await creatingOffscreenPromise;
     } catch (error) {
         if (!error.message.includes("Only a single offscreen document may be created")) {
-            console.error("Offscreen document creation failed:", error);
             throw error;
         }
     } finally {
@@ -75,7 +74,6 @@ async function fetchAndParseData(url, parseAction, options = {}) {
         });
 
     } catch (error) {
-        console.error(`Fetch failed for ${url}:`, error);
         if (parseAction === "parseFoodMenuAPIResponse") return { normalMenu: [], dietMenu: [], hasMenu: false };
         return parseAction === "parseHtmlForProfile" ? null : '-';
     }
@@ -104,7 +102,6 @@ async function fetchDataAndStore(storageKey, url, parseAction, defaultValue, opt
         await chrome.storage.local.set({ [storageKey]: dataToStore });
         return dataToStore;
     } catch (e) {
-        console.error(`Error in fetchDataAndStore for ${storageKey}:`, e);
         await chrome.storage.local.set({ [storageKey]: defaultValue });
         return defaultValue;
     }
@@ -144,7 +141,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         updateStudentData()
             .then(data => sendResponse({ status: "completed", data }))
             .catch(error => {
-                console.error("Failed to update student data:", error);
                 sendResponse({ status: "error", message: error.toString() });
             });
         return true;
