@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
         loadBalanceBtn: document.getElementById("loadBalanceBtn"),
         examScheduleBtn: document.getElementById("goToExamSchedule"),
         toggleFoodMenuBtn: document.getElementById("toggleFoodMenuTypeBtn"),
-        changeGradesBtn: document.getElementById("changeGrades"),
-        autoFillSurveyBtn: document.getElementById("autoFillSurvey"),
         // Modal elements
         balanceModal: document.getElementById("balanceModal"),
         modalBalanceInput: document.getElementById("modalBalanceInput"),
@@ -157,7 +155,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 updatePopupUI(response.data);
             }
         } catch (error) {
-            console.error("Failed to load or fetch data:", error);
             updatePopupUI();
         }
     };
@@ -230,33 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
             renderFoodMenu(foodMenu, preferredMenuType);
         });
 
-        ELEMENTS.changeGradesBtn?.addEventListener("click", () => {
-            const input = prompt("Tüm notları değiştirmek için bir sayı girin (0-100):", "70");
-            if (input === null) return;
-            const number = parseInt(input);
-            if (isNaN(number) || number < 0 || number > 100) {
-                alert("Geçerli bir sayı girmelisiniz.");
-                return;
-            }
-            executeOnSabisTab((num) => {
-                document.querySelectorAll(".card-body table td:nth-child(4) > span:first-child, .card-body table td:nth-child(3) > span:first-child").forEach(span => {
-                    if (span.closest('td').classList.contains('font-weight-bold')) return;
-                    let textNode = Array.from(span.childNodes).find(n => n.nodeType === Node.TEXT_NODE);
-                    if (textNode) textNode.textContent = num.toString();
-                    else span.textContent = num.toString();
-                });
-                chrome.runtime.sendMessage({ action: "recalculateGradesAfterChange" });
-            }, [number]);
-        });
-        
-        ELEMENTS.autoFillSurveyBtn?.addEventListener("click", () => {
-            executeOnSabisTab(() => {
-                document.querySelectorAll("input[type='radio'][value='4']").forEach(r => {
-                    r.checked = true;
-                    r.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-            });
-        });
+
 
 
         Object.values(TOGGLES).forEach(toggle => {
@@ -276,7 +247,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (toggle.reload) {
                             chrome.tabs.reload(tab.id);
                         } else if (toggle.action) {
-                            chrome.tabs.sendMessage(tab.id, { action: toggle.action, state: isChecked }).catch(e => console.error(e));
+                            chrome.tabs.sendMessage(tab.id, { action: toggle.action, state: isChecked }).catch(() => {});
                         }
                     }
                 });
