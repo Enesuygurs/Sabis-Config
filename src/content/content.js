@@ -411,7 +411,7 @@ chrome.storage.local.get([STORAGE_KEYS.CHECK_QUESTIONS], data => {
 });
 
 function tryFillSurvey() {
-    const radioButtons = document.querySelectorAll("input[type='radio'][value='4']");
+    const radioButtons = document.querySelectorAll("input[type='radio'][value='4'], input[type='radio'][name^='A'][value='2']");
     if (radioButtons.length > 0) {
         let anyChanged = false;
         radioButtons.forEach(r => {
